@@ -63,33 +63,78 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const studentId = searchParams.get('studentId')
+    // TODO: Implementare autenticazione reale
+    // Per ora usiamo dati mock se non ci sono utenti nel database
+    
+    const studentsCount = await prisma.student.count()
+    
+    if (studentsCount === 0) {
+      // Nessun utente registrato, restituiamo dati mock
+      return NextResponse.json({
+        student: {
+          id: 'mock',
+          nome: 'Demo',
+          cognome: 'User', 
+          email: 'demo@example.com'
+        },
+        giftLists: [],
+        totalRaised: 0,
+        totalContributions: 0
+      })
+    }
 
-    if (!studentId) {
+    // Prendi il primo studente per demo (in futuro sarà dall'autenticazione)
+    const student = await prisma.student.findFirst({
+      include: {
+        giftLists: {
+          include: {
+            giftItems: {
+              include: {
+                contributions: {
+                  where: { stato: 'completed' }
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    })
+
+    if (!student) {
       return NextResponse.json(
-        { error: 'studentId richiesto' },
-        { status: 400 }
+        { error: 'Nessun utente trovato' },
+        { status: 404 }
       )
     }
 
-    const giftLists = await prisma.giftList.findMany({
-      where: { studentId },
-      include: {
-        giftItems: {
-          include: {
-            contributions: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
+    // Calcola totali
+    let totalRaised = 0
+    let totalContributions = 0
+
+    student.giftLists.forEach((list: any) => {
+      list.giftItems.forEach((item: any) => {
+        totalRaised += item.importoRaccolto
+        totalContributions += item.contributions.length
+      })
     })
 
-    return NextResponse.json({ giftLists })
+    return NextResponse.json({
+      student: {
+        id: student.id,
+        nome: student.nome,
+        cognome: student.cognome,
+        email: student.email
+      },
+      giftLists: student.giftLists,
+      totalRaised,
+      totalContributions
+    })
+
   } catch (error) {
-    console.error('Get lists error:', error)
+    console.error('Get dashboard error:', error)
     return NextResponse.json(
-      { error: 'Errore durante il recupero delle liste' },
+      { error: 'Errore durante il recupero dei dati' },
       { status: 500 }
     )
   }

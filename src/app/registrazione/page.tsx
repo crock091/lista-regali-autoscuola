@@ -10,11 +10,20 @@ export default function RegistrazionePage() {
     cognome: '',
     email: '',
     telefono: '',
-    password: ''
+    password: '',
+    categoriaPatente: 'B'  // Default alla patente B
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+
+  const categoriePatente = [
+    { value: 'AM', label: 'AM - Ciclomotori (50cc)', descrizione: 'Età minima: 14 anni' },
+    { value: 'A1', label: 'A1 - Motocicli 125cc', descrizione: 'Età minima: 16 anni' },
+    { value: 'A2', label: 'A2 - Motocicli 35kW', descrizione: 'Età minima: 18 anni' },
+    { value: 'A3', label: 'A3 - Motocicli senza limiti', descrizione: 'Età minima: 24 anni (o 20 con A2 da 2 anni)' },
+    { value: 'B', label: 'B - Automobili', descrizione: 'Età minima: 18 anni' }
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,7 +54,7 @@ export default function RegistrazionePage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -131,6 +140,30 @@ export default function RegistrazionePage() {
                 placeholder="+39 123 456 7890"
               />
             </div>
+            
+            <div>
+              <label htmlFor="categoriaPatente" className="block text-sm font-medium text-gray-700 mb-1">
+                Categoria Patente da Conseguire
+              </label>
+              <select
+                id="categoriaPatente"
+                name="categoriaPatente"
+                required
+                value={formData.categoriaPatente}
+                onChange={handleChange}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              >
+                {categoriePatente.map((categoria) => (
+                  <option key={categoria.value} value={categoria.value}>
+                    {categoria.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {categoriePatente.find(c => c.value === formData.categoriaPatente)?.descrizione}
+              </p>
+            </div>
+            
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password

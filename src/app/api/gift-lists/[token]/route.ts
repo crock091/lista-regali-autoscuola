@@ -40,7 +40,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ giftList })
+    return NextResponse.json(giftList)
   } catch (error) {
     console.error('Get shared list error:', error)
     return NextResponse.json(

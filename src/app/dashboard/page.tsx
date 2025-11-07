@@ -1,121 +1,321 @@
 'use client'
 
-import { Gift, Plus, Share2, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { Gift, Copy, ExternalLink, TrendingUp, Car, Euro } from 'lucide-react'
+
+interface DashboardData {
+  student: {
+    id: string
+    nome: string
+    cognome: string
+    email: string
+    categoriaPatente: string
+  }
+  giftList: {
+    id: string
+    titolo: string
+    descrizione: string
+    shareToken: string
+    iscrizione: {
+      importoTarget: number
+      importoRaccolto: number
+      percentuale: number
+    }
+    guide: {
+      importoTarget: number
+      importoRaccolto: number
+      percentuale: number
+      oreTarget: number
+      oreRaggiunte: number
+    }
+    totale: {
+      importoTarget: number
+      importoRaccolto: number
+      percentuale: number
+    }
+  }
+  contributi: {
+    numero: number
+    recenti: Array<{
+      nome: string
+      importo: number
+      data: string
+      messaggio?: string
+    }>
+  }
+}
 
 export default function DashboardPage() {
-  // TODO: Implement actual data fetching and state management
-  // For now, showing static mockup
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch('/api/student/dashboard')
+      if (response.ok) {
+        const dashboardData = await response.json()
+        setData(dashboardData)
+      } else if (response.status === 401) {
+        window.location.href = '/login'
+      } else {
+        setError('Errore nel caricamento dei dati')
+      }
+    } catch (err) {
+      setError('Errore di connessione')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const copyShareLink = () => {
+    if (data?.giftList.shareToken) {
+      const shareUrl = `${window.location.origin}/regali/${data.giftList.shareToken}`
+      navigator.clipboard.writeText(shareUrl)
+      alert('Link copiato negli appunti! 🎉\nCondividilo con amici e parenti!')
+    }
+  }
+
+  const openShareLink = () => {
+    if (data?.giftList.shareToken) {
+      const shareUrl = `${window.location.origin}/regali/${data.giftList.shareToken}`
+      window.open(shareUrl, '_blank')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || 'Errore nel caricamento'}</p>
+          <button 
+            onClick={fetchDashboardData}
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
+          >
+            Riprova
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">La Mia Dashboard</h1>
-              <p className="text-gray-600 mt-1">Gestisci le tue liste regali</p>
-            </div>
-            <button className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center space-x-2">
-              <Plus className="h-5 w-5" />
-              <span>Nuova Lista</span>
-            </button>
+        <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Ciao {data.student.nome}! 🚗
+            </h1>
+            <p className="text-gray-600 mt-1">
+              La tua lista regali per la Patente {data.student.categoriaPatente}
+            </p>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Stats */}
+      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6">
+        {/* Statistiche principali */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Liste Create</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">1</p>
+                <p className="text-gray-600 text-sm">Totale Raccolto</p>
+                <p className="text-3xl font-bold text-green-600 mt-1">
+                  €{data.giftList.totale.importoRaccolto.toFixed(2)}
+                </p>
               </div>
-              <Gift className="h-12 w-12 text-primary-600" />
+              <Euro className="h-12 w-12 text-green-500" />
             </div>
           </div>
+
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Contributi Ricevuti</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">€450</p>
+                <p className="text-gray-600 text-sm">Guide Regalate</p>
+                <p className="text-3xl font-bold text-primary-600 mt-1">
+                  {(data.giftList.guide.importoRaccolto / 50).toFixed(1)}
+                </p>
               </div>
-              <TrendingUp className="h-12 w-12 text-green-600" />
+              <TrendingUp className="h-12 w-12 text-primary-500" />
+            </div>
+            <div className="mt-2">
+              <span className="text-sm text-gray-500">
+                guide di guida regalate
+              </span>
             </div>
           </div>
+
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Persone Generose</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">7</p>
+                <p className="text-gray-600 text-sm">Contributi</p>
+                <p className="text-3xl font-bold text-blue-600 mt-1">
+                  {data.contributi.numero}
+                </p>
               </div>
-              <Share2 className="h-12 w-12 text-blue-600" />
+              <Gift className="h-12 w-12 text-blue-500" />
+            </div>
+            <div className="mt-2">
+              <span className="text-sm text-gray-500">
+                persone ti hanno aiutato
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Lists */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Le Mie Liste Regali</h2>
+        {/* Progresso dettagliato */}
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-bold text-gray-900">{data.giftList.titolo}</h2>
+            <p className="text-gray-600 text-sm mt-1">{data.giftList.descrizione}</p>
+          </div>
+          
+          <div className="p-6 space-y-6">
+            {/* Iscrizione */}
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold text-gray-900">💳 Iscrizione</h3>
+                <span className="text-sm font-medium text-gray-600">
+                  €{data.giftList.iscrizione.importoRaccolto.toFixed(2)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500" 
+                  style={{ width: `${Math.min(data.giftList.iscrizione.percentuale, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Guide */}
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold text-gray-900">🚗 Guide Pratiche</h3>
+                <span className="text-sm font-medium text-gray-600">
+                  €{data.giftList.guide.importoRaccolto.toFixed(2)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div 
+                  className="bg-gradient-to-r from-green-500 to-green-600 h-4 rounded-full transition-all duration-500" 
+                  style={{ width: `${Math.min(data.giftList.guide.percentuale, 100)}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {(data.giftList.guide.importoRaccolto / 50).toFixed(1)} guide regalate ({data.giftList.guide.percentuale.toFixed(1)}%)
+              </p>
+            </div>
+
+            {/* Progresso totale */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-gray-900">🎯 Progresso Totale</h3>
+                <span className="text-lg font-bold text-gray-900">
+                  €{data.giftList.totale.importoRaccolto.toFixed(2)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-300 rounded-full h-6">
+                <div 
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 h-6 rounded-full transition-all duration-700 flex items-center justify-center" 
+                  style={{ width: `${Math.min(data.giftList.totale.percentuale, 100)}%` }}
+                >
+                  {data.giftList.totale.percentuale > 10 && (
+                    <span className="text-white text-sm font-bold">
+                      {data.giftList.totale.percentuale.toFixed(0)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="text-center mt-2">
+                {data.giftList.totale.percentuale >= 100 && (
+                  <p className="text-sm text-gray-600">
+                    🎉 Congratulazioni! Hai raggiunto il tuo obiettivo!
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Azioni condivisione */}
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-bold text-gray-900">📤 Condividi la tua lista</h2>
+            <p className="text-gray-600 text-sm mt-1">
+              Invia il link ai tuoi amici e parenti per ricevere contributi
+            </p>
           </div>
           <div className="p-6">
-            <div className="space-y-4">
-              {/* Example list item */}
-              <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900">La Mia Patente 🚗</h3>
-                    <p className="text-gray-600 text-sm">Aiutami a realizzare il mio sogno!</p>
-                  </div>
-                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                    Attiva
-                  </span>
-                </div>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Iscrizione Autoscuola</span>
-                    <span className="font-medium">€200 / €500</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-primary-600 h-2 rounded-full" style={{ width: '40%' }}></div>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Pacchetto 10 Guide</span>
-                    <span className="font-medium">€250 / €400</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-primary-600 h-2 rounded-full" style={{ width: '62%' }}></div>
-                  </div>
-                </div>
-
-                <div className="flex space-x-3">
-                  <button className="flex-1 bg-primary-50 text-primary-700 px-4 py-2 rounded-lg hover:bg-primary-100 flex items-center justify-center space-x-2">
-                    <Share2 className="h-4 w-4" />
-                    <span>Condividi</span>
-                  </button>
-                  <button className="px-4 py-2 text-gray-600 hover:text-gray-900">
-                    Dettagli
-                  </button>
-                </div>
-              </div>
-
-              {/* Empty state when no lists */}
-              {/* <div className="text-center py-12">
-                <Gift className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Nessuna lista ancora</h3>
-                <p className="text-gray-600 mb-4">Crea la tua prima lista regali per iniziare!</p>
-                <button className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700">
-                  Crea Lista
-                </button>
-              </div> */}
+            <div className="flex space-x-3">
+              <button 
+                onClick={copyShareLink}
+                className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 flex items-center justify-center space-x-2 font-medium"
+              >
+                <Copy className="h-5 w-5" />
+                <span>Copia Link</span>
+              </button>
+              <button 
+                onClick={openShareLink}
+                className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 flex items-center justify-center space-x-2 font-medium"
+              >
+                <ExternalLink className="h-5 w-5" />
+                <span>Visualizza Lista</span>
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Contributi recenti */}
+        {data.contributi.recenti.length > 0 && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold text-gray-900">💝 Contributi Recenti</h2>
+            </div>
+            <div className="divide-y divide-gray-200">
+              {data.contributi.recenti.map((contributo, index) => (
+                <div key={index} className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{contributo.nome}</h3>
+                      <p className="text-sm text-gray-500">
+                        {new Date(contributo.data).toLocaleDateString('it-IT', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </p>
+                      {contributo.messaggio && (
+                        <p className="text-sm text-gray-600 mt-2 italic">
+                          &ldquo;{contributo.messaggio}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-lg font-bold text-green-600">
+                      €{contributo.importo.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

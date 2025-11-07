@@ -46,7 +46,7 @@ export async function POST(request: Request) {
         importo,
         messaggio: messaggio || null,
         metodoPagamento,
-        stato: metodoPagamento === 'bonifico' ? 'pending' : 'pending',
+        stato: 'pending', // Sempre pending fino al pagamento effettivo
         payment: {
           create: {
             stato: 'pending',
@@ -58,60 +58,48 @@ export async function POST(request: Request) {
       },
     })
 
-    // Update gift item amount (optimistic - in production, wait for payment confirmation)
-    if (metodoPagamento === 'bonifico') {
-      await prisma.giftItem.update({
-        where: { id: giftItemId },
-        data: {
-          importoRaccolto: {
-            increment: importo,
-          },
-        },
-      })
-
-      // Send notifications for bonifico (immediate)
-      await sendContributionNotification(
-        giftItem.giftList.student.email,
-        giftItem.giftList.student.nome,
-        nome,
-        importo,
-        giftItem.descrizione
-      )
-
-      if (email) {
-        await sendContributionReceipt(
-          email,
-          nome,
-          importo,
-          giftItem.descrizione,
-          `${giftItem.giftList.student.nome} ${giftItem.giftList.student.cognome}`
-        )
-      }
-    }
+    // NON aggiorniamo l'importo raccolto fino al pagamento confermato
+    // L'importo verrà aggiornato solo quando il pagamento sarà verificato
 
     // Return appropriate response based on payment method
     if (metodoPagamento === 'satispay') {
-      // In production, create actual Satispay payment
+      // Usa il link del negozio Satispay specifico
+      const satispayShopUrl = process.env.SATISPAY_SHOP_URL || 'https://www.satispay.com/app/pay/shops/f47d7b67-eb8a-11e5-95cc-06cb0bb44caf';
+      
+      // Costruisci il link con i parametri (se supportati) o usa il link diretto
+      const satispayLink = `${satispayShopUrl}?amount=${importo.toFixed(2)}&reference=REGALO-${contribution.id}`;
+      
       return NextResponse.json({
-        message: 'Contributo registrato',
+        success: true,
         contribution,
         paymentInfo: {
           type: 'satispay',
-          // redirectUrl: satispayPayment.redirectUrl, // From actual Satispay API
-          instructions: 'Verrai reindirizzato a Satispay per completare il pagamento',
+          status: 'pending',
+          paymentLink: satispayLink,
+          shopUrl: satispayShopUrl, // Link diretto senza parametri come fallback
+          amount: importo,
+          reference: `REGALO-${contribution.id}`,
+          description: `Contributo per ${giftItem.descrizione}`,
+          studentName: `${giftItem.giftList.student.nome} ${giftItem.giftList.student.cognome}`,
+          message: 'Paga direttamente al negozio dell\'autoscuola!',
+          instructions: 'Il link ti porterà direttamente al profilo Satispay dell\'autoscuola.',
         },
       })
     } else {
+      // Bonifico bancario - mostra coordinate
       return NextResponse.json({
-        message: 'Contributo registrato',
+        success: true,
         contribution,
         paymentInfo: {
           type: 'bonifico',
-          bankName: process.env.BANK_NAME,
-          iban: process.env.IBAN,
-          recipient: process.env.BANK_RECIPIENT,
+          status: 'pending',
+          bankName: process.env.BANK_NAME || 'Banca Autoscuola',
+          iban: process.env.IBAN || 'IT60 X054 2811 1010 0000 0123 456',
+          recipient: process.env.BANK_RECIPIENT || 'Autoscuola Lista Regali',
           amount: importo,
           reference: `REGALO-${contribution.id}`,
+          message: 'Contributo registrato. Completa il pagamento con bonifico bancario usando i dati qui sotto.',
+          instructions: 'Una volta effettuato il bonifico, il contributo verrà verificato entro 1-2 giorni lavorativi.',
         },
       })
     }

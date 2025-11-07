@@ -11,16 +11,28 @@ datasource db {
 }
 
 model Student {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  password         String
+  nome             String
+  cognome          String
+  telefono         String?
+  categoriaPatente String   @default("B") // AM, A1, A2, A3, B
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  giftLists GiftList[]
+}
+
+model Admin {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
   nome      String
-  cognome   String
-  telefono  String?
+  ruolo     String   @default("admin") // 'admin', 'superadmin'
+  attivo    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  giftLists GiftList[]
 }
 
 model GiftList {
@@ -64,7 +76,10 @@ model Contribution {
   importo         Float
   messaggio       String?
   metodoPagamento String   // 'satispay', 'bonifico'
-  stato           String   @default("pending") // 'pending', 'completed', 'failed'
+  stato           String   @default("pending") // 'pending', 'completed', 'failed', 'pending_verification', 'rejected'
+  ricevutaPath    String?  // Path del file PDF della ricevuta (solo per Satispay)
+  contabile       String?  // Numero contabile per bonifici
+  note            String?  // Note admin (motivo rifiuto, ecc.)
   dataContributo  DateTime @default(now())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

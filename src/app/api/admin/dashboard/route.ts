@@ -36,9 +36,25 @@ export async function GET() {
     const totalAmount = allContributions.reduce((sum: number, contribution: any) => sum + contribution.importo, 0)
     const completedContributions = allContributions.filter((c: any) => c.stato === 'completed').length
 
-    // Contributi pending
+    // Contributi pending e pending_verification
     const pendingContributions = await prisma.contribution.findMany({
-      where: { stato: 'pending' }
+      where: { 
+        stato: { 
+          in: ['pending', 'pending_verification'] 
+        } 
+      },
+      include: {
+        giftItem: {
+          include: {
+            giftList: {
+              include: {
+                student: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { dataContributo: 'desc' }
     })
     const pendingAmount = pendingContributions.reduce((sum: number, c: any) => sum + c.importo, 0)
 
@@ -54,7 +70,8 @@ export async function GET() {
     return NextResponse.json({
       students,
       stats,
-      recentActivity: allContributions.slice(0, 10) // Ultimi 10 contributi
+      recentActivity: allContributions.slice(0, 10), // Ultimi 10 contributi
+      pendingContributions: pendingContributions.slice(0, 20) // Contributi in attesa di verifica
     })
 
   } catch (error) {
