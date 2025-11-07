@@ -70,7 +70,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-xl font-bold mb-2">Pagamenti Diretti</h3>
             <p className="text-gray-600">
-              I contributi vengono pagati direttamente all'autoscuola tramite Satispay o bonifico bancario.
+              I contributi vengono pagati direttamente all&apos;autoscuola tramite Satispay o bonifico bancario.
             </p>
           </div>
         </div>
