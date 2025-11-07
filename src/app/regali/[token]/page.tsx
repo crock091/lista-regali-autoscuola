@@ -49,7 +49,7 @@ export default function GiftListPage({ params }: { params: Promise<{ token: stri
                 <h3 className="font-bold text-lg text-gray-900">💰 Iscrizione Autoscuola</h3>
                 <span className="text-lg font-bold text-primary-600">€200 / €500</span>
               </div>
-              <p className="text-gray-600 text-sm mt-1">Contributo per l'iscrizione e materiale didattico</p>
+              <p className="text-gray-600 text-sm mt-1">Contributo per l&apos;iscrizione e materiale didattico</p>
             </div>
             <div className="p-4">
               <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
