@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: Request) {
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const format = searchParams.get('format') || 'json'
+    const format = request.nextUrl.searchParams.get('format') || 'json'
 
     if (format === 'csv') {
       // Esporta in CSV

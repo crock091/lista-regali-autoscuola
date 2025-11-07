@@ -2,7 +2,7 @@
 
 import { Gift, Heart, TrendingUp, Share2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 interface GiftListData {
   id: string
@@ -45,13 +45,7 @@ export default function GiftListPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasStartedPayment, setHasStartedPayment] = useState(false)
   
-  useEffect(() => {
-    if (token) {
-      fetchGiftListData()
-    }
-  }, [token])
-
-  const fetchGiftListData = async () => {
+  const fetchGiftListData = useCallback(async () => {
     try {
       console.log('Fetching gift list data for token:', token)
       const response = await fetch(`/api/gift-lists/${token}`)
@@ -72,7 +66,13 @@ export default function GiftListPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
+  
+  useEffect(() => {
+    if (token) {
+      fetchGiftListData()
+    }
+  }, [token, fetchGiftListData])
 
   const openContributionModal = (item: any) => {
     setSelectedItem(item)
@@ -290,9 +290,9 @@ export default function GiftListPage() {
                   <div>
                     <p className="font-medium text-gray-900">{contribution.nome}</p>
                     <p className="text-sm text-gray-600">per {contribution.itemDescrizione}</p>
-                    {contribution.messaggio && (
-                      <p className="text-xs text-gray-500 italic mt-1">"{contribution.messaggio}"</p>
-                    )}
+                      {contribution.messaggio && (
+                        <p className="text-xs text-gray-500 italic mt-1">&ldquo;{contribution.messaggio}&rdquo;</p>
+                      )}
                   </div>
                   <span className="font-bold text-primary-600">
                     €{contribution.importo.toFixed(2)}
@@ -549,7 +549,7 @@ function PaymentInstructions({ paymentResult, onClose, hasStartedPayment, setHas
             
             {/* Nota per identificazione pagamento */}
             <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-xs">
-              <p><strong>📋 Per l'autoscuola:</strong></p>
+              <p><strong>📋 Per l&apos;autoscuola:</strong></p>
               <p>Il pagamento sarà identificato tramite importo, orario e nome del cliente. 
               Riferimento interno: <strong>{paymentInfo.reference}</strong></p>
             </div>            {/* Link di pagamento Satispay */}
@@ -575,9 +575,9 @@ function PaymentInstructions({ paymentResult, onClose, hasStartedPayment, setHas
                 <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs">
                   <p><strong>💡 Come funziona:</strong></p>
                   <ol className="list-decimal list-inside mt-1 space-y-1 text-left">
-                    <li>Clicca "Vai al Negozio Satispay"</li>
-                    <li>Si aprirà l'app Satispay sul negozio dell'autoscuola</li>
-                    <li>Inserisci l'importo: <strong>€{paymentInfo.amount.toFixed(2)}</strong></li>
+                    <li>Clicca &ldquo;Vai al Negozio Satispay&rdquo;</li>
+                    <li>Si aprirà l&apos;app Satispay sul negozio dell&apos;autoscuola</li>
+                    <li>Inserisci l&apos;importo: <strong>€{paymentInfo.amount.toFixed(2)}</strong></li>
                     <li>Conferma il pagamento</li>
                     <li>La conferma avverrà in orario di ufficio</li>
                   </ol>
@@ -589,10 +589,10 @@ function PaymentInstructions({ paymentResult, onClose, hasStartedPayment, setHas
             <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm">
               <p className="font-medium text-gray-700 mb-2">📝 Alternativa manuale:</p>
               <ol className="list-decimal list-inside space-y-1 text-gray-600">
-                <li>Apri l'app Satispay</li>
-                <li>Tocca "Paga" nell'app</li>
+                <li>Apri l&apos;app Satispay</li>
+                <li>Tocca &ldquo;Paga&rdquo; nell&apos;app</li>
                 <li>Usa il link diretto al negozio qui sopra</li>
-                <li>Inserisci l'importo: <strong>€{paymentInfo.amount.toFixed(2)}</strong></li>
+                <li>Inserisci l&apos;importo: <strong>€{paymentInfo.amount.toFixed(2)}</strong></li>
                 <li>Conferma il pagamento</li>
               </ol>
             </div>

@@ -55,14 +55,15 @@ export async function POST(request: NextRequest) {
       where: { id: contributionId },
       data: {
         stato: 'pending_verification', // Stato intermedio in attesa di verifica admin
+        contabile: contabile,
         payment: {
           update: {
             transactionId: contabile, // Salviamo la contabile come transaction ID
-            metadata: {
+            metadata: JSON.stringify({
               contabile: contabile,
               dataInserimentoContabile: new Date().toISOString(),
               note: 'Contabile inserita dall\'utente - in attesa di verifica admin'
-            }
+            })
           }
         }
       }

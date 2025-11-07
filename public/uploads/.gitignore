@@ -1,0 +1,5 @@
+# Ignora tutti i file upload ma mantieni le directory
+*
+!.gitignore
+!ricevute/.gitkeep
+!contabili/.gitkeep
