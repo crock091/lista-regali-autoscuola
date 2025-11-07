@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  nome      String
+  cognome   String
+  telefono  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  giftLists GiftList[]
+}
+
+model GiftList {
+  id          String   @id @default(cuid())
+  studentId   String
+  titolo      String
+  descrizione String?
+  shareToken  String   @unique
+  attiva      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  giftItems  GiftItem[]
+  
+  @@index([studentId])
+  @@index([shareToken])
+}
+
+model GiftItem {
+  id              String   @id @default(cuid())
+  giftListId      String
+  tipo            String   // 'iscrizione', 'guida', 'esame'
+  descrizione     String
+  importoTarget   Float
+  importoRaccolto Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  giftList      GiftList       @relation(fields: [giftListId], references: [id], onDelete: Cascade)
+  contributions Contribution[]
+  
+  @@index([giftListId])
+}
+
+model Contribution {
+  id              String   @id @default(cuid())
+  giftItemId      String
+  nome            String   // Nome di chi contribuisce
+  email           String?
+  importo         Float
+  messaggio       String?
+  metodoPagamento String   // 'satispay', 'bonifico'
+  stato           String   @default("pending") // 'pending', 'completed', 'failed'
+  dataContributo  DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  giftItem GiftItem  @relation(fields: [giftItemId], references: [id], onDelete: Cascade)
+  payment  Payment?
+  
+  @@index([giftItemId])
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  contributionId String   @unique
+  transactionId  String?  @unique
+  stato          String   @default("pending") // 'pending', 'completed', 'failed'
+  metadata       String?  // JSON con dati aggiuntivi
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  contribution Contribution @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  
+  @@index([transactionId])
+}
