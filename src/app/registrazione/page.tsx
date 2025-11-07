@@ -1,6 +1,56 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function RegistrazionePage() {
+  const [formData, setFormData] = useState({
+    nome: '',
+    cognome: '',
+    email: '',
+    telefono: '',
+    password: ''
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Registrazione avvenuta con successo
+        router.push('/login?message=Registrazione completata! Ora puoi accedere.')
+      } else {
+        setError(data.error || 'Errore durante la registrazione')
+      }
+    } catch (error) {
+      setError('Errore di connessione')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -12,7 +62,13 @@ export default function RegistrazionePage() {
             Inizia a creare la tua lista regali
           </p>
         </div>
-        <form className="mt-8 space-y-6 bg-white p-8 rounded-lg shadow">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6 bg-white p-8 rounded-lg shadow">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -24,6 +80,8 @@ export default function RegistrazionePage() {
                   name="nome"
                   type="text"
                   required
+                  value={formData.nome}
+                  onChange={handleChange}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   placeholder="Mario"
                 />
@@ -37,6 +95,8 @@ export default function RegistrazionePage() {
                   name="cognome"
                   type="text"
                   required
+                  value={formData.cognome}
+                  onChange={handleChange}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   placeholder="Rossi"
                 />
@@ -51,6 +111,8 @@ export default function RegistrazionePage() {
                 name="email"
                 type="email"
                 required
+                value={formData.email}
+                onChange={handleChange}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="mario.rossi@example.com"
               />
@@ -63,6 +125,8 @@ export default function RegistrazionePage() {
                 id="telefono"
                 name="telefono"
                 type="tel"
+                value={formData.telefono}
+                onChange={handleChange}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="+39 123 456 7890"
               />
@@ -76,6 +140,8 @@ export default function RegistrazionePage() {
                 name="password"
                 type="password"
                 required
+                value={formData.password}
+                onChange={handleChange}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Minimo 6 caratteri"
               />
@@ -85,9 +151,10 @@ export default function RegistrazionePage() {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Registrati
+              {loading ? 'Registrazione...' : 'Registrati'}
             </button>
           </div>
 
