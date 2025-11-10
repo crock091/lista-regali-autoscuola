@@ -123,6 +123,12 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/dashboard')
       const data = await response.json()
       
+      console.log('📊 Admin Dashboard Data:', {
+        totalStudents: data.students?.length || 0,
+        students: data.students,
+        stats: data.stats
+      })
+      
       if (response.ok) {
         setStats(data.stats)
         setStudents(data.students)

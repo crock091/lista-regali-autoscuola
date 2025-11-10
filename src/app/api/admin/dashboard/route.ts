@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
+    console.log('🔍 Admin Dashboard API - Fetching students...')
+    
     // Ottieni tutti gli studenti con le loro liste regali e contributi
     const students = await prisma.student.findMany({
       include: {
@@ -21,6 +23,13 @@ export async function GET() {
       },
       orderBy: { createdAt: 'desc' }
     })
+
+    console.log(`📊 Found ${students.length} students:`, students.map(s => ({ 
+      id: s.id, 
+      email: s.email, 
+      nome: s.nome, 
+      cognome: s.cognome 
+    })))
 
     // Calcola statistiche
     const totalStudents = students.length
@@ -87,13 +96,22 @@ export async function GET() {
       completedContributions
     }
 
-    return NextResponse.json({
+    const response = {
       students,
       stats,
       recentActivity: allContributions.slice(0, 10), // Ultimi 10 contributi
       pendingContributions: pendingContributions.slice(0, 20), // Contributi in attesa di verifica
       rejectedContributions: rejectedContributions // Contributi rifiutati (separati)
+    }
+
+    console.log('✅ Admin Dashboard API - Response:', {
+      studentsCount: response.students.length,
+      stats: response.stats,
+      pendingCount: response.pendingContributions.length,
+      rejectedCount: response.rejectedContributions.length
     })
+
+    return NextResponse.json(response)
 
   } catch (error) {
     console.error('Admin dashboard error:', error)
