@@ -58,11 +58,20 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/student/dashboard')
+      // Controlla se l'utente è loggato
+      const studentData = localStorage.getItem('student')
+      if (!studentData) {
+        window.location.href = '/login'
+        return
+      }
+
+      const student = JSON.parse(studentData)
+      const response = await fetch(`/api/student/dashboard?studentId=${student.id}`)
       if (response.ok) {
         const dashboardData = await response.json()
         setData(dashboardData)
       } else if (response.status === 401) {
+        localStorage.removeItem('student') // Clear invalid session
         window.location.href = '/login'
       } else {
         setError('Errore nel caricamento dei dati')

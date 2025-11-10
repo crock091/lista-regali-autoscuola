@@ -3,10 +3,19 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
   try {
-    // TODO: Implementare autenticazione reale
-    // Per ora prendiamo il primo studente nel database
+    // Estrai studentId dai parametri URL
+    const { searchParams } = new URL(request.url)
+    const studentId = searchParams.get('studentId')
     
-    const student = await prisma.student.findFirst({
+    if (!studentId) {
+      return NextResponse.json(
+        { error: 'ID studente mancante' },
+        { status: 401 }
+      )
+    }
+    
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
       include: {
         giftLists: {
           include: {
@@ -26,39 +35,24 @@ export async function GET(request: Request) {
       },
     })
 
-    if (!student || student.giftLists.length === 0) {
-      // Se non c'è uno studente o lista, crea dati demo
+    if (!student) {
+      return NextResponse.json(
+        { error: 'Studente non trovato' },
+        { status: 404 }
+      )
+    }
+
+    if (student.giftLists.length === 0) {
+      // Se lo studente non ha liste, restituisci i suoi dati con lista vuota
       return NextResponse.json({
         student: {
-          id: 'demo',
-          nome: 'Mario',
-          cognome: 'Rossi',
-          email: 'mario@demo.it',
-          categoriaPatente: 'B'
+          id: student.id,
+          nome: student.nome,
+          cognome: student.cognome,
+          email: student.email,
+          categoriaPatente: student.categoriaPatente
         },
-        giftList: {
-          id: 'demo-list',
-          titolo: 'La mia Patente B 🚗',
-          descrizione: 'Aiutami a realizzare il sogno di guidare!',
-          shareToken: 'demo-token',
-          iscrizione: {
-            importoTarget: 500,
-            importoRaccolto: 0,
-            percentuale: 0
-          },
-          guide: {
-            importoTarget: 300, // 6 ore × 50€
-            importoRaccolto: 0,
-            percentuale: 0,
-            oreTarget: 6,
-            oreRaggiunte: 0
-          },
-          totale: {
-            importoTarget: 800,
-            importoRaccolto: 0,
-            percentuale: 0
-          }
-        },
+        giftList: null,
         contributi: {
           numero: 0,
           recenti: []

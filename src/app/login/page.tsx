@@ -32,7 +32,8 @@ function LoginForm() {
       const data = await response.json()
 
       if (response.ok) {
-        // Login avvenuto con successo
+        // Login avvenuto con successo - salva i dati dello studente
+        localStorage.setItem('student', JSON.stringify(data.student))
         router.push('/dashboard')
       } else {
         setError(data.error || 'Errore durante il login')
