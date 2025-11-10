@@ -13,7 +13,7 @@ export async function GET(request: Request) {
             giftItems: {
               include: {
                 contributions: {
-                  where: { stato: 'completed' },
+                  // Mostra tutti i contributi (pending, pending_verification, completed, rejected)
                   orderBy: { dataContributo: 'desc' }
                 },
               },
@@ -142,7 +142,9 @@ export async function GET(request: Request) {
           nome: contrib.nome,
           importo: contrib.importo,
           data: contrib.dataContributo,
-          messaggio: contrib.messaggio
+          messaggio: contrib.messaggio,
+          stato: contrib.stato, // Aggiungiamo lo stato
+          note: contrib.note // E le note admin (motivo rifiuto)
         }))
       }
     })

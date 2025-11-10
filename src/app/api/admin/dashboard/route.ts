@@ -40,7 +40,7 @@ export async function GET() {
     const pendingContributions = await prisma.contribution.findMany({
       where: { 
         stato: { 
-          in: ['pending', 'pending_verification'] 
+          in: ['pending', 'pending_verification', 'rejected'] 
         } 
       },
       include: {

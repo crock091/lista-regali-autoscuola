@@ -41,6 +41,8 @@ interface DashboardData {
       importo: number
       data: string
       messaggio?: string
+      stato: string // Aggiungiamo stato (pending, pending_verification, completed, rejected)
+      note?: string // Note admin (motivo rifiuto)
     }>
   }
 }
@@ -301,10 +303,38 @@ export default function DashboardPage() {
                           year: 'numeric'
                         })}
                       </p>
+                      
+                      {/* Stato contributo */}
+                      <div className="mt-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          contributo.stato === 'completed' 
+                            ? 'bg-green-100 text-green-800'
+                            : contributo.stato === 'pending_verification'
+                              ? 'bg-orange-100 text-orange-800'
+                              : contributo.stato === 'rejected'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {contributo.stato === 'completed' && '✅ Approvato'}
+                          {contributo.stato === 'pending_verification' && '🔍 In verifica'}
+                          {contributo.stato === 'rejected' && '❌ Rifiutato'}
+                          {contributo.stato === 'pending' && '⏳ In attesa'}
+                        </span>
+                      </div>
+
                       {contributo.messaggio && (
                         <p className="text-sm text-gray-600 mt-2 italic">
                           &ldquo;{contributo.messaggio}&rdquo;
                         </p>
+                      )}
+
+                      {/* Note admin (motivo rifiuto) */}
+                      {contributo.stato === 'rejected' && contributo.note && (
+                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                          <p className="text-sm text-red-700">
+                            <strong>Motivo rifiuto:</strong> {contributo.note}
+                          </p>
+                        </div>
                       )}
                     </div>
                     <span className="text-lg font-bold text-green-600">

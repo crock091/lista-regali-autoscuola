@@ -94,6 +94,13 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchAdminData()
+      
+      // Auto-refresh ogni 30 secondi
+      const interval = setInterval(() => {
+        fetchAdminData()
+      }, 30000) // 30 secondi
+      
+      return () => clearInterval(interval)
     }
   }, [isAuthenticated])
 
@@ -256,6 +263,103 @@ export default function AdminPage() {
     }
   }
 
+  // Funzione per eliminare definitivamente un contributo rifiutato
+  const deleteRejectedContribution = async (contributionId: string) => {
+    if (!confirm('ATTENZIONE: Vuoi eliminare definitivamente questo contributo rifiutato? Questa operazione non può essere annullata.')) {
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/admin/delete-contribution?contributionId=${contributionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      })
+
+      if (response.ok) {
+        alert('Contributo eliminato definitivamente. 🗑️')
+        await fetchAdminData() // Ricarica i dati
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Errore nell\'eliminazione del contributo')
+      }
+    } catch (error) {
+      console.error('Error deleting contribution:', error)
+      alert('Errore di rete nell\'eliminazione del contributo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Funzione per eliminare studente completo
+  const deleteStudent = async (studentId: string, studentName: string) => {
+    if (!confirm(`ATTENZIONE: Vuoi eliminare definitivamente l'allievo ${studentName} e TUTTI i suoi dati (liste, contributi, ecc.)?\n\nQuesta operazione non può essere annullata!`)) {
+      return
+    }
+
+    // Doppia conferma per sicurezza
+    if (!confirm('Confermi di voler procedere con l\'eliminazione? Tutti i dati verranno persi per sempre.')) {
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/admin/delete-student?studentId=${studentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(`✅ Allievo ${studentName} eliminato con successo!\n\nDati eliminati:\n- ${data.eliminatedData.giftLists} liste regali\n- ${data.eliminatedData.giftItems} articoli\n- ${data.eliminatedData.contributions} contributi`)
+        await fetchAdminData() // Ricarica i dati
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Errore nell\'eliminazione dell\'allievo')
+      }
+    } catch (error) {
+      console.error('Error deleting student:', error)
+      alert('Errore di rete nell\'eliminazione dell\'allievo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Funzione per eliminare solo contributi rifiutati di uno studente
+  const deleteStudentRejectedContributions = async (studentId: string, studentName: string) => {
+    if (!confirm(`Vuoi eliminare tutti i contributi rifiutati di ${studentName}?`)) {
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/admin/delete-student?studentId=${studentId}&action=delete-rejected-contributions`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(`✅ ${data.deletedCount} contributi rifiutati eliminati per ${studentName}`)
+        await fetchAdminData() // Ricarica i dati
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Errore nell\'eliminazione dei contributi rifiutati')
+      }
+    } catch (error) {
+      console.error('Error deleting rejected contributions:', error)
+      alert('Errore di rete nell\'eliminazione dei contributi rifiutati')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -292,6 +396,16 @@ export default function AdminPage() {
               </p>
             </div>
             <div className="flex items-center space-x-3">
+              <button
+                onClick={fetchAdminData}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+                disabled={loading}
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Aggiorna</span>
+              </button>
               <button
                 onClick={exportData}
                 className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center space-x-2"
@@ -534,6 +648,9 @@ export default function AdminPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Registrato
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Azioni
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -560,6 +677,24 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(student.createdAt).toLocaleDateString('it-IT')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex flex-col space-y-1">
+                              <button
+                                onClick={() => deleteStudentRejectedContributions(student.id, `${student.nome} ${student.cognome}`)}
+                                className="text-orange-600 hover:text-orange-800 text-xs underline"
+                                disabled={loading}
+                              >
+                                🗑️ Elimina Contributi Rifiutati
+                              </button>
+                              <button
+                                onClick={() => deleteStudent(student.id, `${student.nome} ${student.cognome}`)}
+                                className="text-red-600 hover:text-red-800 text-xs underline"
+                                disabled={loading}
+                              >
+                                ❌ Elimina Allievo Completo
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -632,9 +767,15 @@ export default function AdminPage() {
                               <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${
                                 contribution.stato === 'pending_verification'
                                   ? 'bg-orange-100 text-orange-800'
-                                  : 'bg-yellow-100 text-yellow-800'
+                                  : contribution.stato === 'rejected'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-yellow-100 text-yellow-800'
                               }`}>
-                                {contribution.stato === 'pending_verification' ? 'Da verificare' : 'In attesa'}
+                                {contribution.stato === 'pending_verification' 
+                                  ? 'Da verificare' 
+                                  : contribution.stato === 'rejected'
+                                    ? 'Rifiutato'
+                                    : 'In attesa'}
                               </span>
                               
                               {/* Pulsanti di approvazione per contributi da verificare */}
@@ -654,6 +795,24 @@ export default function AdminPage() {
                                   >
                                     ❌ Rifiuta
                                   </button>
+                                </div>
+                              )}
+
+                              {/* Pulsante eliminazione per contributi rifiutati */}
+                              {contribution.stato === 'rejected' && (
+                                <div className="mt-2">
+                                  <button
+                                    onClick={() => deleteRejectedContribution(contribution.id)}
+                                    className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                    disabled={loading}
+                                  >
+                                    🗑️ Elimina Definitivamente
+                                  </button>
+                                  {contribution.note && (
+                                    <p className="text-xs text-red-600 mt-1">
+                                      Motivo: {contribution.note}
+                                    </p>
+                                  )}
                                 </div>
                               )}
                             </div>
