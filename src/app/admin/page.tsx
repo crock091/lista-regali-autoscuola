@@ -334,7 +334,13 @@ export default function AdminPage() {
         setTimeout(fetchAdminData, 100)
       } else {
         const errorData = await response.json()
-        console.error('❌ Errore eliminazione:', errorData.error)
+        if (response.status === 404) {
+          console.log(`ℹ️ Studente ${studentName} non trovato (già eliminato o non esistente)`)
+          // Refresh dei dati per aggiornare la lista
+          setTimeout(fetchAdminData, 100)
+        } else {
+          console.error('❌ Errore eliminazione:', errorData.error)
+        }
       }
     } catch (error) {
       console.error('Error deleting student:', error)
