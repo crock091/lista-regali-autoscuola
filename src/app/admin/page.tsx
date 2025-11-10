@@ -41,7 +41,13 @@ interface Contribution {
   stato: string
   dataContributo: string
   messaggio: string | null
-  ricevutaPath: string | null
+  ricevutaPath: string | null  // DEPRECATED
+  ricevutaBase64: string | null // Nuovo sistema Base64
+  ricevutaName: string | null   // Nome file ricevuta
+  bonificoBase64: string | null // Base64 bonifico
+  bonificoName: string | null   // Nome file bonifico
+  contabile: string | null
+  note: string | null
 }
 
 interface AdminStats {
@@ -131,6 +137,33 @@ export default function AdminPage() {
       })
       setStudents([])
       setPendingContributions([])
+    }
+  }
+
+  // Funzione helper per creare URL blob da Base64
+  const createBlobUrl = (base64Data: string, fileName: string) => {
+    try {
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error('Error creating blob URL:', error);
+      return null;
+    }
+  }
+
+  // Funzione per visualizzare ricevuta Base64
+  const viewReceipt = (base64Data: string, fileName: string) => {
+    const url = createBlobUrl(base64Data, fileName);
+    if (url) {
+      window.open(url, '_blank');
+      // URL verrà revocato automaticamente quando la finestra si chiude
+      setTimeout(() => URL.revokeObjectURL(url), 60000); // cleanup dopo 1 minuto
     }
   }
 
@@ -556,16 +589,37 @@ export default function AdminPage() {
                               </p>
                               <p className="text-sm text-gray-500 mt-1">
                                 {new Date(contribution.dataContributo).toLocaleDateString('it-IT')} • {contribution.metodoPagamento}
-                                {contribution.ricevutaPath && (
+                                {/* Ricevuta Satispay (Base64 o legacy path) */}
+                                {(contribution.ricevutaBase64 || contribution.ricevutaPath) && (
                                   <span className="ml-2">
-                                    <a 
-                                      href={contribution.ricevutaPath}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 text-xs"
+                                    {contribution.ricevutaBase64 ? (
+                                      <button 
+                                        onClick={() => viewReceipt(contribution.ricevutaBase64!, contribution.ricevutaName || 'ricevuta.pdf')}
+                                        className="text-blue-600 hover:text-blue-800 text-xs underline"
+                                      >
+                                        📄 Vedi Ricevuta Satispay
+                                      </button>
+                                    ) : (
+                                      <a 
+                                        href={contribution.ricevutaPath!}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 text-xs underline"
+                                      >
+                                        📄 Vedi Ricevuta (legacy)
+                                      </a>
+                                    )}
+                                  </span>
+                                )}
+                                {/* Ricevuta Bonifico */}
+                                {contribution.bonificoBase64 && (
+                                  <span className="ml-2">
+                                    <button 
+                                      onClick={() => viewReceipt(contribution.bonificoBase64!, contribution.bonificoName || 'bonifico.pdf')}
+                                      className="text-green-600 hover:text-green-800 text-xs underline"
                                     >
-                                      📄 Vedi Ricevuta
-                                    </a>
+                                      🏦 Vedi Bonifico
+                                    </button>
                                   </span>
                                 )}
                               </p>
@@ -584,7 +638,7 @@ export default function AdminPage() {
                               </span>
                               
                               {/* Pulsanti di approvazione per contributi da verificare */}
-                              {contribution.stato === 'pending_verification' && contribution.ricevutaPath && (
+                              {contribution.stato === 'pending_verification' && (contribution.ricevutaBase64 || contribution.ricevutaPath || contribution.bonificoBase64) && (
                                 <div className="mt-2 flex space-x-2">
                                   <button
                                     onClick={() => approveContribution(contribution.id)}
