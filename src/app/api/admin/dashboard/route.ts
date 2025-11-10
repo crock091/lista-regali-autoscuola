@@ -3,7 +3,11 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    console.log('🔍 Admin Dashboard API - Fetching students...')
+    console.log('🔍 Admin Dashboard API - Starting...')
+    console.log('🔌 Database URL exists:', !!process.env.DATABASE_URL)
+    console.log('🌍 Environment:', process.env.NODE_ENV)
+    
+    console.log('📊 Fetching students from database...')
     
     // Ottieni tutti gli studenti con le loro liste regali e contributi
     const students = await prisma.student.findMany({
@@ -24,7 +28,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     })
 
-    console.log(`📊 Found ${students.length} students:`, students.map(s => ({ 
+    console.log(`✅ Found ${students.length} students:`, students.map(s => ({ 
       id: s.id, 
       email: s.email, 
       nome: s.nome, 

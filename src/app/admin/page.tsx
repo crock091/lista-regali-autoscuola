@@ -126,6 +126,8 @@ export default function AdminPage() {
       console.log('📊 Admin Dashboard Data:', {
         totalStudents: data.students?.length || 0,
         students: data.students,
+        pendingContributions: data.pendingContributions?.length || 0,
+        rejectedContributions: data.rejectedContributions?.length || 0,
         stats: data.stats
       })
       
