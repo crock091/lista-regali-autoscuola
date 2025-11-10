@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
 import { prisma } from '@/lib/prisma'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,36 +42,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Crea directory se non esiste
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'contabili')
-    try {
-      await fs.access(uploadsDir)
-    } catch {
-      await fs.mkdir(uploadsDir, { recursive: true })
-    }
+    // Converti file in Base64 per storage Vercel-compatible
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64Content = buffer.toString('base64');
 
-    // Genera nome file unico
-    const fileExtension = '.pdf'
-    const uniqueFilename = `contabile-${uuidv4()}${fileExtension}`
-    const filePath = path.join(uploadsDir, uniqueFilename)
-
-    // Salva il file
-    const fileBuffer = Buffer.from(await file.arrayBuffer())
-    await fs.writeFile(filePath, fileBuffer)
-
-    // Aggiorna il contributo nel database
-    await prisma.contribution.update({
+    // Aggiorna il contributo con Base64 storage
+    const updatedContribution = await prisma.contribution.update({
       where: { id: contributionId },
       data: {
-        ricevutaPath: `/uploads/contabili/${uniqueFilename}`,
+        bonificoBase64: base64Content,
+        bonificoName: file.name,
         stato: 'pending_verification'
       }
     })
 
     return NextResponse.json({
-      message: 'Ricevuta PDF registrata con successo',
-      filename: uniqueFilename
+      message: 'File caricato con successo e salvato nel database',
+      contribution: updatedContribution
     })
+
   } catch (error) {
     console.error('Errore upload contabile:', error)
     return NextResponse.json(

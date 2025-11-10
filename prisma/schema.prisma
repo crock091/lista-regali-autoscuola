@@ -77,8 +77,12 @@ model Contribution {
   messaggio       String?
   metodoPagamento String   // 'satispay', 'bonifico'
   stato           String   @default("pending") // 'pending', 'completed', 'failed', 'pending_verification', 'rejected'
-  ricevutaPath    String?  // Path del file PDF della ricevuta (solo per Satispay)
+  ricevutaPath    String?  // Path del file PDF della ricevuta (solo per Satispay) - DEPRECATO
+  ricevutaBase64  String?  // Base64 del file PDF ricevuta (Vercel-compatible)
+  ricevutaName    String?  // Nome originale del file ricevuta
   contabile       String?  // Numero contabile per bonifici
+  bonificoBase64  String?  // Base64 del file PDF bonifico (Vercel-compatible)
+  bonificoName    String?  // Nome originale del file bonifico
   note            String?  // Note admin (motivo rifiuto, ecc.)
   dataContributo  DateTime @default(now())
   createdAt       DateTime @default(now())

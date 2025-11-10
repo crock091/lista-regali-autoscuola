@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,21 +60,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Genera nome file unico
-    const fileExtension = 'pdf';
-    const fileName = `${uuidv4()}-${contributionId}.${fileExtension}`;
-    const filePath = join(process.cwd(), 'public', 'uploads', 'ricevute', fileName);
-
-    // Salva il file
+    // Converti file in Base64 per storage Vercel-compatible
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
+    const base64Content = buffer.toString('base64');
 
-    // Aggiorna il contributo nel database
+    // Aggiorna il contributo nel database con Base64
     const updatedContribution = await prisma.contribution.update({
       where: { id: contributionId },
       data: {
-        ricevutaPath: `/uploads/ricevute/${fileName}`,
+        ricevutaBase64: base64Content,
+        ricevutaName: file.name,
+        ricevutaPath: null, // Clear old path field
         stato: 'pending_verification' // Cambia stato per indicare che è in attesa di verifica
       }
     });
@@ -86,7 +80,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Ricevuta caricata con successo! Il contributo sarà verificato dall\'autoscuola.',
       contribution: updatedContribution,
-      fileName: fileName
+      fileName: file.name
     });
 
   } catch (error) {
