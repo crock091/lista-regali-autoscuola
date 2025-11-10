@@ -53,29 +53,6 @@ export default function DashboardPage() {
   const [error, setError] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  useEffect(() => {
-    // Controllo autenticazione prima di caricare i dati
-    const studentData = localStorage.getItem('student')
-    if (!studentData) {
-      window.location.href = '/login'
-      return
-    }
-    setIsAuthenticated(true)
-    fetchDashboardData()
-  }, [])
-
-  // Early return se non autenticato
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando autenticazione...</p>
-        </div>
-      </div>
-    )
-  }
-
   const fetchDashboardData = async () => {
     try {
       // Controlla se l'utente è loggato
@@ -101,6 +78,29 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    // Controllo autenticazione prima di caricare i dati
+    const studentData = localStorage.getItem('student')
+    if (!studentData) {
+      window.location.href = '/login'
+      return
+    }
+    setIsAuthenticated(true)
+    fetchDashboardData()
+  }, [])
+
+  // Early return se non autenticato
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando autenticazione...</p>
+        </div>
+      </div>
+    )
   }
 
   const copyShareLink = () => {
