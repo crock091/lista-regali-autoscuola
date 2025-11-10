@@ -295,10 +295,16 @@ export default function AdminPage() {
 
       if (response.ok) {
         console.log('✅ Contributo eliminato definitivamente')
-        setTimeout(fetchAdminData, 100)
+        // Refresh immediato invece di setTimeout
+        await fetchAdminData()
       } else {
         const errorData = await response.json()
-        console.error('❌ Errore:', errorData.error || 'Errore nell\'eliminazione del contributo')
+        if (response.status === 404) {
+          console.log('ℹ️ Contributo non trovato (già eliminato)')
+          await fetchAdminData()
+        } else {
+          console.error('❌ Errore:', errorData.error || 'Errore nell\'eliminazione del contributo')
+        }
       }
     } catch (error) {
       console.error('Error deleting contribution:', error)
@@ -331,13 +337,14 @@ export default function AdminPage() {
       if (response.ok) {
         const data = await response.json()
         console.log(`✅ ${studentName} eliminato:`, data.eliminatedData)
-        setTimeout(fetchAdminData, 100)
+        // Refresh immediato per aggiornare la UI
+        await fetchAdminData()
       } else {
         const errorData = await response.json()
         if (response.status === 404) {
           console.log(`ℹ️ Studente ${studentName} non trovato (già eliminato o non esistente)`)
-          // Refresh dei dati per aggiornare la lista
-          setTimeout(fetchAdminData, 100)
+          // Refresh immediato dei dati per rimuovere dalla UI
+          await fetchAdminData()
         } else {
           console.error('❌ Errore eliminazione:', errorData.error)
         }
