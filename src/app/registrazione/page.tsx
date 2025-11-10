@@ -88,6 +88,7 @@ export default function RegistrazionePage() {
                   id="nome"
                   name="nome"
                   type="text"
+                  autoComplete="given-name"
                   required
                   value={formData.nome}
                   onChange={handleChange}
@@ -103,6 +104,7 @@ export default function RegistrazionePage() {
                   id="cognome"
                   name="cognome"
                   type="text"
+                  autoComplete="family-name"
                   required
                   value={formData.cognome}
                   onChange={handleChange}
@@ -119,6 +121,7 @@ export default function RegistrazionePage() {
                 id="email"
                 name="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={formData.email}
                 onChange={handleChange}
@@ -134,6 +137,7 @@ export default function RegistrazionePage() {
                 id="telefono"
                 name="telefono"
                 type="tel"
+                autoComplete="tel"
                 value={formData.telefono}
                 onChange={handleChange}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
@@ -172,6 +176,7 @@ export default function RegistrazionePage() {
                 id="password"
                 name="password"
                 type="password"
+                autoComplete="new-password"
                 required
                 value={formData.password}
                 onChange={handleChange}
