@@ -93,18 +93,6 @@ export default function AdminPage() {
     }
   }, [router])
 
-  // Early return se non autenticato
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando autenticazione...</p>
-        </div>
-      </div>
-    )
-  }
-
   useEffect(() => {
     if (isAuthenticated) {
       fetchAdminData()
@@ -117,6 +105,18 @@ export default function AdminPage() {
       return () => clearInterval(interval)
     }
   }, [isAuthenticated])
+
+  // Early return se non autenticato
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando autenticazione...</p>
+        </div>
+      </div>
+    )
+  }
 
   const fetchAdminData = async () => {
     try {
