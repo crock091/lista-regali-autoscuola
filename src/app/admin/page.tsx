@@ -63,7 +63,9 @@ export default function AdminPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [pendingContributions, setPendingContributions] = useState<any[]>([])
+  const [rejectedContributions, setRejectedContributions] = useState<any[]>([]) // Nuova sezione
   const [loading, setLoading] = useState(true)
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set()) // Track operazioni in corso
   const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'contributions'>('overview')
   const [adminData, setAdminData] = useState<any>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -113,6 +115,7 @@ export default function AdminPage() {
         setStats(data.stats)
         setStudents(data.students)
         setPendingContributions(data.pendingContributions || [])
+        setRejectedContributions(data.rejectedContributions || []) // Aggiungo rejected
       } else {
         console.error('Error fetching admin data:', data.error)
         // Fallback ai dati mock se l'API non funziona
@@ -265,12 +268,12 @@ export default function AdminPage() {
 
   // Funzione per eliminare definitivamente un contributo rifiutato
   const deleteRejectedContribution = async (contributionId: string) => {
-    if (!confirm('ATTENZIONE: Vuoi eliminare definitivamente questo contributo rifiutato? Questa operazione non può essere annullata.')) {
+    if (processingIds.has(contributionId) || !confirm('ATTENZIONE: Vuoi eliminare definitivamente questo contributo rifiutato? Questa operazione non può essere annullata.')) {
       return
     }
 
     try {
-      setLoading(true)
+      setProcessingIds(prev => new Set(prev.add(contributionId)))
       const response = await fetch(`/api/admin/delete-contribution?contributionId=${contributionId}`, {
         method: 'DELETE',
         headers: {
@@ -279,33 +282,33 @@ export default function AdminPage() {
       })
 
       if (response.ok) {
-        alert('Contributo eliminato definitivamente. 🗑️')
-        await fetchAdminData() // Ricarica i dati
+        console.log('✅ Contributo eliminato definitivamente')
+        setTimeout(fetchAdminData, 100)
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Errore nell\'eliminazione del contributo')
+        console.error('❌ Errore:', errorData.error || 'Errore nell\'eliminazione del contributo')
       }
     } catch (error) {
       console.error('Error deleting contribution:', error)
-      alert('Errore di rete nell\'eliminazione del contributo')
+      console.error('❌ Errore di rete nell\'eliminazione del contributo')
     } finally {
-      setLoading(false)
+      setProcessingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(contributionId)
+        return newSet
+      })
     }
   }
 
   // Funzione per eliminare studente completo
   const deleteStudent = async (studentId: string, studentName: string) => {
-    if (!confirm(`ATTENZIONE: Vuoi eliminare definitivamente l'allievo ${studentName} e TUTTI i suoi dati (liste, contributi, ecc.)?\n\nQuesta operazione non può essere annullata!`)) {
-      return
-    }
-
-    // Doppia conferma per sicurezza
-    if (!confirm('Confermi di voler procedere con l\'eliminazione? Tutti i dati verranno persi per sempre.')) {
+    const deleteKey = `delete-${studentId}`
+    if (processingIds.has(deleteKey) || !confirm(`ELIMINA ${studentName}?\n\nRimuoverà TUTTI i dati (liste, contributi). Operazione irreversibile!`)) {
       return
     }
 
     try {
-      setLoading(true)
+      setProcessingIds(prev => new Set(prev.add(deleteKey)))
       const response = await fetch(`/api/admin/delete-student?studentId=${studentId}`, {
         method: 'DELETE',
         headers: {
@@ -315,28 +318,32 @@ export default function AdminPage() {
 
       if (response.ok) {
         const data = await response.json()
-        alert(`✅ Allievo ${studentName} eliminato con successo!\n\nDati eliminati:\n- ${data.eliminatedData.giftLists} liste regali\n- ${data.eliminatedData.giftItems} articoli\n- ${data.eliminatedData.contributions} contributi`)
-        await fetchAdminData() // Ricarica i dati
+        console.log(`✅ ${studentName} eliminato:`, data.eliminatedData)
+        setTimeout(fetchAdminData, 100)
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Errore nell\'eliminazione dell\'allievo')
+        console.error('❌ Errore eliminazione:', errorData.error)
       }
     } catch (error) {
       console.error('Error deleting student:', error)
-      alert('Errore di rete nell\'eliminazione dell\'allievo')
+      console.error('❌ Errore rete eliminazione studente')
     } finally {
-      setLoading(false)
+      setProcessingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(deleteKey)
+        return newSet
+      })
     }
   }
 
   // Funzione per eliminare solo contributi rifiutati di uno studente
   const deleteStudentRejectedContributions = async (studentId: string, studentName: string) => {
-    if (!confirm(`Vuoi eliminare tutti i contributi rifiutati di ${studentName}?`)) {
+    if (processingIds.has(studentId) || !confirm(`Eliminare contributi rifiutati di ${studentName}?`)) {
       return
     }
 
     try {
-      setLoading(true)
+      setProcessingIds(prev => new Set(prev.add(studentId)))
       const response = await fetch(`/api/admin/delete-student?studentId=${studentId}&action=delete-rejected-contributions`, {
         method: 'DELETE',
         headers: {
@@ -346,17 +353,21 @@ export default function AdminPage() {
 
       if (response.ok) {
         const data = await response.json()
-        alert(`✅ ${data.deletedCount} contributi rifiutati eliminati per ${studentName}`)
-        await fetchAdminData() // Ricarica i dati
+        console.log(`✅ ${data.deletedCount} contributi rifiutati eliminati per ${studentName}`)
+        setTimeout(fetchAdminData, 100)
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Errore nell\'eliminazione dei contributi rifiutati')
+        console.error('❌ Errore:', errorData.error)
       }
     } catch (error) {
       console.error('Error deleting rejected contributions:', error)
-      alert('Errore di rete nell\'eliminazione dei contributi rifiutati')
+      console.error('❌ Errore rete eliminazione contributi rifiutati')
     } finally {
-      setLoading(false)
+      setProcessingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(studentId)
+        return newSet
+      })
     }
   }
 
@@ -558,7 +569,7 @@ export default function AdminPage() {
                 )}
 
                 {/* Alert per contributi in attesa */}
-                {pendingContributions.length > 0 && (
+                {pendingContributions.filter(c => c.stato === 'pending' || c.stato === 'pending_verification').length > 0 && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -569,7 +580,7 @@ export default function AdminPage() {
                         </div>
                         <div>
                           <h3 className="text-lg font-medium text-orange-800">
-                            {pendingContributions.length} Contributi da Verificare
+                            {pendingContributions.filter(c => c.stato === 'pending' || c.stato === 'pending_verification').length} Contributi da Verificare
                           </h3>
                           <p className="text-orange-700">
                             Ci sono contributi con ricevute PDF in attesa della tua approvazione.
@@ -581,6 +592,35 @@ export default function AdminPage() {
                         className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 text-sm font-medium"
                       >
                         Verifica Ora
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Alert per contributi rifiutati */}
+                {rejectedContributions.length > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <span className="text-red-600 font-bold text-sm">✗</span>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-medium text-red-800">
+                            {rejectedContributions.length} Contributi Rifiutati
+                          </h3>
+                          <p className="text-red-700">
+                            Ci sono contributi rifiutati che possono essere eliminati definitivamente.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab('contributions')}
+                        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm font-medium"
+                      >
+                        Gestisci
                       </button>
                     </div>
                   </div>
@@ -682,17 +722,17 @@ export default function AdminPage() {
                             <div className="flex flex-col space-y-1">
                               <button
                                 onClick={() => deleteStudentRejectedContributions(student.id, `${student.nome} ${student.cognome}`)}
-                                className="text-orange-600 hover:text-orange-800 text-xs underline"
-                                disabled={loading}
+                                className="text-orange-600 hover:text-orange-800 text-xs underline disabled:opacity-50"
+                                disabled={loading || processingIds.has(student.id)}
                               >
-                                🗑️ Elimina Contributi Rifiutati
+                                {processingIds.has(student.id) ? '⏳ Eliminando...' : '🗑️ Elimina Contributi Rifiutati'}
                               </button>
                               <button
                                 onClick={() => deleteStudent(student.id, `${student.nome} ${student.cognome}`)}
-                                className="text-red-600 hover:text-red-800 text-xs underline"
-                                disabled={loading}
+                                className="text-red-600 hover:text-red-800 text-xs underline disabled:opacity-50"
+                                disabled={loading || processingIds.has(`delete-${student.id}`)}
                               >
-                                ❌ Elimina Allievo Completo
+                                {processingIds.has(`delete-${student.id}`) ? '⏳ Eliminando...' : '❌ Elimina Allievo Completo'}
                               </button>
                             </div>
                           </td>
@@ -708,13 +748,15 @@ export default function AdminPage() {
             {activeTab === 'contributions' && (
               <div className="space-y-6">
                 {/* Sezione contributi in attesa di verifica */}
-                {pendingContributions.length > 0 && (
+                {pendingContributions.filter(c => c.stato === 'pending' || c.stato === 'pending_verification').length > 0 && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-orange-800 mb-4">
-                      🔔 Contributi in Attesa di Verifica ({pendingContributions.length})
+                      🔔 Contributi in Attesa di Verifica ({pendingContributions.filter(c => c.stato === 'pending' || c.stato === 'pending_verification').length})
                     </h3>
                     <div className="space-y-4">
-                      {pendingContributions.map(contribution => (
+                      {pendingContributions.filter(contribution => 
+                        contribution.stato === 'pending' || contribution.stato === 'pending_verification'
+                      ).map(contribution => (
                         <div key={contribution.id} className="bg-white p-4 rounded-lg border border-orange-200">
                           <div className="flex justify-between items-start">
                             <div>
@@ -767,15 +809,11 @@ export default function AdminPage() {
                               <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${
                                 contribution.stato === 'pending_verification'
                                   ? 'bg-orange-100 text-orange-800'
-                                  : contribution.stato === 'rejected'
-                                    ? 'bg-red-100 text-red-800'
-                                    : 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-yellow-100 text-yellow-800'
                               }`}>
                                 {contribution.stato === 'pending_verification' 
                                   ? 'Da verificare' 
-                                  : contribution.stato === 'rejected'
-                                    ? 'Rifiutato'
-                                    : 'In attesa'}
+                                  : 'In attesa'}
                               </span>
                               
                               {/* Pulsanti di approvazione per contributi da verificare */}
@@ -783,38 +821,104 @@ export default function AdminPage() {
                                 <div className="mt-2 flex space-x-2">
                                   <button
                                     onClick={() => approveContribution(contribution.id)}
-                                    className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                                    disabled={loading}
+                                    className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                    disabled={loading || processingIds.has(`approve-${contribution.id}`)}
                                   >
-                                    ✅ Approva
+                                    {processingIds.has(`approve-${contribution.id}`) ? '⏳ Approvando...' : '✅ Approva'}
                                   </button>
                                   <button
                                     onClick={() => rejectContribution(contribution.id)}
-                                    className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                                    disabled={loading}
+                                    className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                    disabled={loading || processingIds.has(`reject-${contribution.id}`)}
                                   >
-                                    ❌ Rifiuta
+                                    {processingIds.has(`reject-${contribution.id}`) ? '⏳ Rifiutando...' : '❌ Rifiuta'}
                                   </button>
                                 </div>
                               )}
-
-                              {/* Pulsante eliminazione per contributi rifiutati */}
-                              {contribution.stato === 'rejected' && (
-                                <div className="mt-2">
-                                  <button
-                                    onClick={() => deleteRejectedContribution(contribution.id)}
-                                    className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
-                                    disabled={loading}
-                                  >
-                                    🗑️ Elimina Definitivamente
-                                  </button>
-                                  {contribution.note && (
-                                    <p className="text-xs text-red-600 mt-1">
-                                      Motivo: {contribution.note}
-                                    </p>
-                                  )}
-                                </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Sezione contributi rifiutati */}
+                {rejectedContributions.length > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-red-800 mb-4">
+                      🚫 Contributi Rifiutati ({rejectedContributions.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {rejectedContributions.map(contribution => (
+                        <div key={contribution.id} className="bg-white p-4 rounded-lg border border-red-200">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">{contribution.nome}</p>
+                              <p className="text-sm text-gray-600">
+                                Contributo per: {contribution.giftItem.giftList.student.nome} {contribution.giftItem.giftList.student.cognome}
+                              </p>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {new Date(contribution.dataContributo).toLocaleDateString('it-IT')} • {contribution.metodoPagamento}
+                                {/* Ricevuta Satispay (Base64 o legacy path) */}
+                                {(contribution.ricevutaBase64 || contribution.ricevutaPath) && (
+                                  <span className="ml-2">
+                                    {contribution.ricevutaBase64 ? (
+                                      <button 
+                                        onClick={() => viewReceipt(contribution.ricevutaBase64!, contribution.ricevutaName || 'ricevuta.pdf')}
+                                        className="text-blue-600 hover:text-blue-800 text-xs underline"
+                                      >
+                                        📄 Vedi Ricevuta Satispay
+                                      </button>
+                                    ) : (
+                                      <a 
+                                        href={contribution.ricevutaPath!}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 text-xs underline"
+                                      >
+                                        📄 Vedi Ricevuta (legacy)
+                                      </a>
+                                    )}
+                                  </span>
+                                )}
+                                {/* Ricevuta Bonifico */}
+                                {contribution.bonificoBase64 && (
+                                  <span className="ml-2">
+                                    <button 
+                                      onClick={() => viewReceipt(contribution.bonificoBase64!, contribution.bonificoName || 'bonifico.pdf')}
+                                      className="text-green-600 hover:text-green-800 text-xs underline"
+                                    >
+                                      🏦 Vedi Bonifico
+                                    </button>
+                                  </span>
+                                )}
+                              </p>
+                              {contribution.messaggio && (
+                                <p className="text-sm text-gray-600 mt-2 italic">&ldquo;{contribution.messaggio}&rdquo;</p>
                               )}
+                              {contribution.note && (
+                                <p className="text-xs text-red-600 mt-2 font-medium">
+                                  Motivo rifiuto: {contribution.note}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-red-600">€{contribution.importo.toFixed(2)}</p>
+                              <span className="text-xs font-medium px-2.5 py-0.5 rounded bg-red-100 text-red-800">
+                                Rifiutato
+                              </span>
+                              
+                              {/* Pulsante eliminazione definitiva */}
+                              <div className="mt-2">
+                                <button
+                                  onClick={() => deleteRejectedContribution(contribution.id)}
+                                  className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 disabled:opacity-50"
+                                  disabled={loading || processingIds.has(`delete-rejected-${contribution.id}`)}
+                                >
+                                  {processingIds.has(`delete-rejected-${contribution.id}`) ? '⏳ Eliminando...' : '🗑️ Elimina Definitivamente'}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>

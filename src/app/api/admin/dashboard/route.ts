@@ -40,7 +40,7 @@ export async function GET() {
     const pendingContributions = await prisma.contribution.findMany({
       where: { 
         stato: { 
-          in: ['pending', 'pending_verification', 'rejected'] 
+          in: ['pending', 'pending_verification'] // Solo contributi da verificare, non rejected
         } 
       },
       include: {
@@ -58,6 +58,26 @@ export async function GET() {
     })
     const pendingAmount = pendingContributions.reduce((sum: number, c: any) => sum + c.importo, 0)
 
+    // Query separata per contributi rifiutati
+    const rejectedContributions = await prisma.contribution.findMany({
+      where: { 
+        stato: 'rejected'
+      },
+      include: {
+        giftItem: {
+          include: {
+            giftList: {
+              include: {
+                student: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { dataContributo: 'desc' },
+      take: 10 // Ultimi 10 rifiutati
+    })
+
     const stats = {
       totalStudents,
       totalLists,
@@ -71,7 +91,8 @@ export async function GET() {
       students,
       stats,
       recentActivity: allContributions.slice(0, 10), // Ultimi 10 contributi
-      pendingContributions: pendingContributions.slice(0, 20) // Contributi in attesa di verifica
+      pendingContributions: pendingContributions.slice(0, 20), // Contributi in attesa di verifica
+      rejectedContributions: rejectedContributions // Contributi rifiutati (separati)
     })
 
   } catch (error) {
