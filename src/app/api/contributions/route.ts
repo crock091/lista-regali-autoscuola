@@ -61,13 +61,19 @@ export async function POST(request: Request) {
     // NON aggiorniamo l'importo raccolto fino al pagamento confermato
     // L'importo verrà aggiornato solo quando il pagamento sarà verificato
 
+    // Genera riferimento con nome e cognome studente
+    const studentFullName = `${giftItem.giftList.student.nome}${giftItem.giftList.student.cognome}`;
+    // Rimuovi spazi e caratteri speciali, converti in maiuscolo
+    const cleanName = studentFullName.replace(/\s+/g, '').toUpperCase();
+    const paymentReference = `REGALO-${cleanName}`;
+
     // Return appropriate response based on payment method
     if (metodoPagamento === 'satispay') {
       // Usa il link del negozio Satispay specifico
       const satispayShopUrl = process.env.SATISPAY_SHOP_URL || 'https://www.satispay.com/app/pay/shops/f47d7b67-eb8a-11e5-95cc-06cb0bb44caf';
       
       // Costruisci il link con i parametri (se supportati) o usa il link diretto
-      const satispayLink = `${satispayShopUrl}?amount=${importo.toFixed(2)}&reference=REGALO-${contribution.id}`;
+      const satispayLink = `${satispayShopUrl}?amount=${importo.toFixed(2)}&reference=${paymentReference}`;
       
       return NextResponse.json({
         success: true,
@@ -78,7 +84,7 @@ export async function POST(request: Request) {
           paymentLink: satispayLink,
           shopUrl: satispayShopUrl, // Link diretto senza parametri come fallback
           amount: importo,
-          reference: `REGALO-${contribution.id}`,
+          reference: paymentReference,
           description: `Contributo per ${giftItem.descrizione}`,
           studentName: `${giftItem.giftList.student.nome} ${giftItem.giftList.student.cognome}`,
           message: 'Paga direttamente al negozio dell\'autoscuola!',
@@ -97,7 +103,7 @@ export async function POST(request: Request) {
           iban: process.env.IBAN || 'IT60 X054 2811 1010 0000 0123 456',
           recipient: process.env.BANK_RECIPIENT || 'Autoscuola Lista Regali',
           amount: importo,
-          reference: `REGALO-${contribution.id}`,
+          reference: paymentReference,
           message: 'Contributo registrato. Completa il pagamento con bonifico bancario usando i dati qui sotto.',
           instructions: 'Una volta effettuato il bonifico, il contributo verrà verificato entro 1-2 giorni lavorativi.',
         },
