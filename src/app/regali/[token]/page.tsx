@@ -218,6 +218,7 @@ export default function GiftListPage() {
                 alt="Logo Autoscuola Ardito" 
                 width={150} 
                 height={75}
+                style={{ width: 'auto', height: 'auto' }}
                 priority
               />
             </div>

@@ -138,6 +138,7 @@ export default function LoginPage() {
             alt="Logo Autoscuola Ardito" 
             width={200} 
             height={100}
+            style={{ width: 'auto', height: 'auto' }}
             className="mb-4"
             priority
           />

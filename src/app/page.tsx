@@ -15,6 +15,7 @@ export default function HomePage() {
                 alt="Logo Autoscuola Ardito" 
                 width={180} 
                 height={90}
+                style={{ width: 'auto', height: 'auto' }}
                 priority
               />
             </div>

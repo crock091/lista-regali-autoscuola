@@ -29,6 +29,7 @@ export default function PrivacyPolicyPage() {
                 alt="Logo Autoscuola Ardito" 
                 width={120} 
                 height={60}
+                style={{ width: 'auto', height: 'auto' }}
                 priority
               />
             </div>

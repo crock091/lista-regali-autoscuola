@@ -91,10 +91,11 @@ function ResetPasswordForm() {
               alt="Logo Autoscuola Ardito" 
               width={200} 
               height={100}
+              style={{ width: 'auto', height: 'auto' }}
               className="mb-4"
               priority
             />
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+            <div className="rounded-full bg-red-100 p-3 mb-4">
               <h2 className="text-2xl font-bold text-green-800 mb-2">
                 Password Aggiornata! ✅
               </h2>
@@ -120,6 +121,7 @@ function ResetPasswordForm() {
             alt="Logo Autoscuola Ardito" 
             width={200} 
             height={100}
+            style={{ width: 'auto', height: 'auto' }}
             className="mb-4"
             priority
           />

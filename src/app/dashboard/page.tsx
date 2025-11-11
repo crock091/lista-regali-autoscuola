@@ -157,10 +157,11 @@ export default function DashboardPage() {
               alt="Logo Autoscuola Ardito" 
               width={150} 
               height={75}
+              style={{ width: 'auto', height: 'auto' }}
               className="mb-4"
               priority
             />
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 text-center">
               Ciao {data.student.nome}! 🚗
             </h1>
             <p className="text-gray-600 mt-1">
