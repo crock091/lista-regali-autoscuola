@@ -93,31 +93,6 @@ export default function AdminPage() {
     }
   }, [router])
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchAdminData()
-      
-      // Auto-refresh ogni 30 secondi
-      const interval = setInterval(() => {
-        fetchAdminData()
-      }, 30000) // 30 secondi
-      
-      return () => clearInterval(interval)
-    }
-  }, [isAuthenticated])
-
-  // Early return se non autenticato
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando autenticazione...</p>
-        </div>
-      </div>
-    )
-  }
-
   const fetchAdminData = async () => {
     try {
       const response = await fetch('/api/admin/dashboard')
@@ -135,10 +110,9 @@ export default function AdminPage() {
         setStats(data.stats)
         setStudents(data.students)
         setPendingContributions(data.pendingContributions || [])
-        setRejectedContributions(data.rejectedContributions || []) // Aggiungo rejected
+        setRejectedContributions(data.rejectedContributions || [])
       } else {
         console.error('Error fetching admin data:', data.error)
-        // Fallback ai dati mock se l'API non funziona
         setStats({
           totalStudents: 0,
           totalLists: 0,
@@ -156,7 +130,6 @@ export default function AdminPage() {
       console.error('Error fetching admin data:', error)
       setLoading(false)
       
-      // Dati di fallback
       setStats({
         totalStudents: 0,
         totalLists: 0,
@@ -168,6 +141,31 @@ export default function AdminPage() {
       setStudents([])
       setPendingContributions([])
     }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAdminData()
+      
+      // Auto-refresh ogni 30 secondi
+      const interval = setInterval(() => {
+        fetchAdminData()
+      }, 30000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [isAuthenticated])
+
+  // Early return se non autenticato
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando autenticazione...</p>
+        </div>
+      </div>
+    )
   }
 
   // Funzione helper per creare URL blob da Base64
