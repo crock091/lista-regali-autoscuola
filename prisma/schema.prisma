@@ -76,7 +76,7 @@ model Contribution {
   importo         Float
   messaggio       String?
   metodoPagamento String   // 'satispay', 'bonifico'
-  stato           String   @default("pending") // 'pending', 'completed', 'failed', 'pending_verification', 'rejected'
+  stato           String   @default("draft") // 'draft', 'pending', 'completed', 'failed', 'pending_verification', 'rejected'
   ricevutaPath    String?  // Path del file PDF della ricevuta (solo per Satispay) - DEPRECATO
   ricevutaBase64  String?  // Base64 del file PDF ricevuta (Vercel-compatible)
   ricevutaName    String?  // Nome originale del file ricevuta

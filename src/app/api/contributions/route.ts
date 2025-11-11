@@ -46,7 +46,7 @@ export async function POST(request: Request) {
         importo,
         messaggio: messaggio || null,
         metodoPagamento,
-        stato: 'pending', // Sempre pending fino al pagamento effettivo
+        stato: 'draft', // Draft fino a quando non viene caricata la ricevuta
         payment: {
           create: {
             stato: 'pending',
