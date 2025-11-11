@@ -15,6 +15,7 @@ export default function RegistrazionePage() {
     password: '',
     categoriaPatente: 'B'  // Default alla patente B
   })
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -221,10 +222,37 @@ export default function RegistrazionePage() {
             </div>
           </div>
 
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                id="acceptPrivacy"
+                name="acceptPrivacy"
+                type="checkbox"
+                checked={acceptPrivacy}
+                onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                required
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="acceptPrivacy" className="text-gray-700">
+                Accetto la{' '}
+                <Link href="/privacy-policy" target="_blank" className="text-primary-600 hover:text-primary-500 underline">
+                  Privacy Policy
+                </Link>
+                {' '}e la{' '}
+                <Link href="/cookie-policy" target="_blank" className="text-primary-600 hover:text-primary-500 underline">
+                  Cookie Policy
+                </Link>
+                {' '}*
+              </label>
+            </div>
+          </div>
+
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !acceptPrivacy}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Registrazione...' : 'Registrati'}

@@ -22,6 +22,12 @@ export default function RootLayout({
     <html lang="it">
       <head>
         <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
+        {/* Script Iubenda Cookie Banner */}
+        <script 
+          type="text/javascript" 
+          src="https://embeds.iubenda.com/widgets/58101ae9-a24a-421e-9ef9-74bf193491e5.js"
+          async
+        />
       </head>
       <body className={inter.className}>
         <ErrorBoundary>
