@@ -18,6 +18,8 @@ model Student {
   cognome          String
   telefono         String?
   categoriaPatente String   @default("B") // AM, A1, A2, A3, B
+  resetToken       String?  // Token per reset password
+  resetTokenExpiry DateTime? // Scadenza token reset
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   

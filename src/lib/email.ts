@@ -263,3 +263,54 @@ export async function sendContributorApprovedNotification(
     // Non blocchiamo per errori email
   }
 }
+
+export async function sendPasswordResetEmail(
+  email: string,
+  nome: string,
+  resetUrl: string
+) {
+  const mailOptions = {
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: '🔐 Reset Password - Lista Regali Autoscuola',
+    html: `
+      <h2>Ciao ${nome}!</h2>
+      <p>Hai richiesto di reimpostare la password del tuo account.</p>
+      
+      <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+        <p style="margin: 0;"><strong>⚠️ Importante:</strong></p>
+        <ul style="margin: 10px 0;">
+          <li>Il link è valido per <strong>1 ora</strong></li>
+          <li>Se non hai richiesto questo reset, ignora questa email</li>
+          <li>La tua password attuale rimarrà attiva fino al reset</li>
+        </ul>
+      </div>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+          🔐 Reimposta Password
+        </a>
+      </p>
+
+      <p style="color: #666; font-size: 14px;">
+        Oppure copia e incolla questo link nel tuo browser:<br>
+        <a href="${resetUrl}" style="color: #2563eb; word-break: break-all;">${resetUrl}</a>
+      </p>
+      
+      <hr>
+      <p style="color: #666; font-size: 12px;">
+        ${process.env.AUTOSCUOLA_NAME}<br>
+        📞 ${process.env.AUTOSCUOLA_PHONE}<br>
+        📧 ${process.env.AUTOSCUOLA_EMAIL}
+      </p>
+    `,
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+    console.log(`✅ Email reset password inviata a ${email}`)
+  } catch (error) {
+    console.error('❌ Errore invio email reset password:', error)
+    throw error // In questo caso vogliamo sapere se l'email non è stata inviata
+  }
+}

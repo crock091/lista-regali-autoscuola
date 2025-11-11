@@ -113,6 +113,12 @@ function LoginForm() {
       </div>
 
       <div className="text-center text-sm">
+        <Link href="/recupera-password" className="text-primary-600 hover:text-primary-500 text-sm">
+          Password dimenticata?
+        </Link>
+      </div>
+
+      <div className="text-center text-sm">
         <span className="text-gray-600">Non hai un account? </span>
         <Link href="/registrazione" className="font-medium text-primary-600 hover:text-primary-500">
           Registrati
