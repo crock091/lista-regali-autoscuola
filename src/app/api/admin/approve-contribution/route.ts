@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendPaymentApprovedNotification } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +41,11 @@ export async function POST(request: NextRequest) {
       include: {
         giftItem: {
           include: {
-            giftList: true
+            giftList: {
+              include: {
+                student: true // Includi i dati dello studente
+              }
+            }
           }
         }
       }
@@ -71,6 +76,22 @@ export async function POST(request: NextRequest) {
           }
         }
       })
+
+      // Invia email di notifica allo studente
+      try {
+        const student = contribution.giftItem.giftList.student
+        await sendPaymentApprovedNotification(
+          student.email,
+          `${student.nome} ${student.cognome}`,
+          contribution.nome,
+          contribution.importo,
+          contribution.giftItem.descrizione
+        )
+        console.log(`✅ Email di approvazione inviata a ${student.email}`)
+      } catch (emailError) {
+        console.error('❌ Errore invio email, ma contributo approvato:', emailError)
+        // Non blocchiamo l'approvazione se l'email fallisce
+      }
 
       return NextResponse.json({
         message: 'Contributo approvato con successo',

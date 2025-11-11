@@ -71,3 +71,48 @@ export async function sendContributionReceipt(
     console.error('Error sending receipt email:', error)
   }
 }
+
+export async function sendPaymentApprovedNotification(
+  studentEmail: string,
+  studentName: string,
+  contributorName: string,
+  amount: number,
+  itemDescription: string
+) {
+  const mailOptions = {
+    from: process.env.EMAIL_FROM,
+    to: studentEmail,
+    subject: '✅ Pagamento Approvato - Lista Regali Autoscuola',
+    html: `
+      <h2>Ciao ${studentName}!</h2>
+      <p>🎉 <strong>Ottima notizia!</strong> Il pagamento di <strong>${contributorName}</strong> è stato verificato e approvato!</p>
+      
+      <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; margin: 20px 0;">
+        <p style="margin: 0;"><strong>Dettagli Contributo Approvato:</strong></p>
+        <ul style="margin: 10px 0;">
+          <li><strong>Da:</strong> ${contributorName}</li>
+          <li><strong>Importo:</strong> €${amount.toFixed(2)}</li>
+          <li><strong>Per:</strong> ${itemDescription}</li>
+        </ul>
+      </div>
+
+      <p>L'importo è stato aggiunto al totale raccolto per la tua patente.</p>
+      <p>Accedi alla tua dashboard per vedere il progresso aggiornato!</p>
+      
+      <hr>
+      <p style="color: #666; font-size: 12px;">
+        ${process.env.AUTOSCUOLA_NAME}<br>
+        📞 ${process.env.AUTOSCUOLA_PHONE}<br>
+        📧 ${process.env.AUTOSCUOLA_EMAIL}
+      </p>
+    `,
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+    console.log(`✅ Email di approvazione inviata a ${studentEmail}`)
+  } catch (error) {
+    console.error('❌ Errore invio email approvazione:', error)
+    throw error
+  }
+}
