@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster Lista Regali - Autoscuola Ardito</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            width: 297mm;
+            height: 210mm;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30mm;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorazioni natalizie */
+        body::before {
+            content: '🎄';
+            position: absolute;
+            top: 20mm;
+            left: 20mm;
+            font-size: 60px;
+            opacity: 0.3;
+        }
+        
+        body::after {
+            content: '🎁';
+            position: absolute;
+            bottom: 20mm;
+            right: 20mm;
+            font-size: 60px;
+            opacity: 0.3;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 1000px;
+            width: 90%;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            color: #dc2626;
+            font-size: 38px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            color: #166534;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .description {
+            color: #374151;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            padding: 0 20px;
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            display: block;
+        }
+        
+        .cta {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+        }
+        
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            gap: 30px;
+        }
+        
+        .feature {
+            color: #374151;
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .feature-icon {
+            font-size: 32px;
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 15mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="public/logo.png" alt="Logo Autoscuola Ardito" class="logo">
+        
+        <h1>🎄 Lista Regali<br>di Natale 🎁</h1>
+        
+        <div class="subtitle">
+            Il regalo perfetto per la patente!
+        </div>
+        
+        <div class="description">
+            Crea la tua lista regali online e condividila con amici e parenti.<br>
+            Ricevi contributi per <strong>iscrizione, guide ed esami</strong>!
+        </div>
+        
+        <div class="qr-container">
+            <img src="qrsitoregali.png" alt="QR Code Lista Regali" class="qr-code">
+        </div>
+        
+        <div class="cta">
+            📱 Inquadra il QR Code
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <div><strong>Facile</strong><br>e veloce</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔗</div>
+                <div><strong>Condividi</strong><br>il link</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💶</div>
+                <div><strong>Ricevi</strong><br>contributi</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        🎅 Autoscuola Ardito • Alba • Neive • Montà 🎅
+    </div>
+</body>
+</html>

@@ -3,6 +3,6 @@
   "installCommand": "npm install",
   "env": {
     "SATISPAY_SHOP_URL": "https://www.satispay.com/app/pay/shops/f47d7b67-eb8a-11e5-95cc-06cb0bb44caf",
-    "NEXT_PUBLIC_APP_URL": "https://lista-regali-autoscuola-ardito.vercel.app"
+    "NEXT_PUBLIC_APP_URL": "https://liste.autoscuoleardito.it"
   }
 }
