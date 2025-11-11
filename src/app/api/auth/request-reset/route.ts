@@ -41,8 +41,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Invia email con link di reset
-    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`
+    // Invia email con link di reset - usa l'URL della richiesta corrente
+    const host = request.headers.get('host') || 'localhost:3000'
+    const protocol = host.includes('localhost') ? 'http' : 'https'
+    const resetUrl = `${protocol}://${host}/reset-password?token=${resetToken}`
     
     await sendPasswordResetEmail(
       student.email,
