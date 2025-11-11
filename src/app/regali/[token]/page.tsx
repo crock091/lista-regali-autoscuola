@@ -37,6 +37,7 @@ export default function GiftListPage() {
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [contributionForm, setContributionForm] = useState({
     nome: '',
+    email: '',
     importo: '',
     messaggio: '',
     metodoPagamento: 'satispay'
@@ -80,6 +81,7 @@ export default function GiftListPage() {
     setPaymentResult(null)
     setContributionForm({
       nome: '',
+      email: '',
       importo: '',
       messaggio: '',
       metodoPagamento: 'satispay'
@@ -100,6 +102,7 @@ export default function GiftListPage() {
     setHasStartedPayment(false)
     setContributionForm({
       nome: '',
+      email: '',
       importo: '',
       messaggio: '',
       metodoPagamento: 'satispay'
@@ -351,6 +354,24 @@ export default function GiftListPage() {
                       placeholder="Mario Rossi"
                       disabled={isSubmitting}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      La tua email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={contributionForm.email}
+                      onChange={(e) => setContributionForm(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="mario.rossi@email.com"
+                      disabled={isSubmitting}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Riceverai una conferma e la ricevuta del pagamento
+                    </p>
                   </div>
 
                   <div>

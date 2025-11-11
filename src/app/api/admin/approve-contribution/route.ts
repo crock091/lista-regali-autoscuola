@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendPaymentApprovedNotification } from '@/lib/email'
+import { sendPaymentApprovedNotification, sendContributorApprovedNotification } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,7 +87,19 @@ export async function POST(request: NextRequest) {
           contribution.importo,
           contribution.giftItem.descrizione
         )
-        console.log(`✅ Email di approvazione inviata a ${student.email}`)
+        console.log(`✅ Email di approvazione inviata allo studente ${student.email}`)
+        
+        // Invia email anche al donatore se ha fornito l'email
+        if (contribution.email) {
+          await sendContributorApprovedNotification(
+            contribution.email,
+            contribution.nome,
+            contribution.importo,
+            contribution.giftItem.descrizione,
+            `${student.nome} ${student.cognome}`
+          )
+          console.log(`✅ Email di approvazione inviata al donatore ${contribution.email}`)
+        }
       } catch (emailError) {
         console.error('❌ Errore invio email, ma contributo approvato:', emailError)
         // Non blocchiamo l'approvazione se l'email fallisce

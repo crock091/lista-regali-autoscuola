@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendContributionNotification, sendContributionReceipt } from '@/lib/email'
+import { sendContributionNotification, sendContributionReceipt, sendContributorPendingNotification } from '@/lib/email'
 import { z } from 'zod'
 
 const contributeSchema = z.object({

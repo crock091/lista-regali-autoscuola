@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendContributorPendingNotification } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +33,18 @@ export async function POST(request: NextRequest) {
 
     // Verifica che il contributo esista
     const contribution = await prisma.contribution.findUnique({
-      where: { id: contributionId }
+      where: { id: contributionId },
+      include: {
+        giftItem: {
+          include: {
+            giftList: {
+              include: {
+                student: true
+              }
+            }
+          }
+        }
+      }
     })
 
     if (!contribution) {
@@ -56,6 +68,24 @@ export async function POST(request: NextRequest) {
         stato: 'pending_verification'
       }
     })
+
+    // Invia email di conferma al donatore se ha fornito l'email
+    if (contribution.email) {
+      try {
+        const student = contribution.giftItem.giftList.student;
+        await sendContributorPendingNotification(
+          contribution.email,
+          contribution.nome,
+          contribution.importo,
+          contribution.giftItem.descrizione,
+          `${student.nome} ${student.cognome}`,
+          contribution.metodoPagamento
+        );
+      } catch (emailError) {
+        console.error('❌ Errore invio email pending al donatore:', emailError);
+        // Non blocchiamo l'upload per errori email
+      }
+    }
 
     return NextResponse.json({
       message: 'File caricato con successo e salvato nel database',
