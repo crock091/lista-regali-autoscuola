@@ -135,6 +135,7 @@ export default function GiftListPage() {
         body: JSON.stringify({
           giftItemId: selectedItem.id,
           nome: contributionForm.nome,
+          email: contributionForm.email,
           importo: parseFloat(contributionForm.importo),
           messaggio: contributionForm.messaggio,
           metodoPagamento: contributionForm.metodoPagamento
