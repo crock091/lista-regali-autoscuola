@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Lista Regali Autoscuola',
   description: 'Crea la tua lista regali per la patente e ricevi contributi da amici e parenti',
+  icons: {
+    icon: '/favicon.jpg',
+  },
 }
 
 export default function RootLayout({
@@ -17,6 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="it">
+      <head>
+        <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
+      </head>
       <body className={inter.className}>
         <ErrorBoundary>
           {children}

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Gift, Heart, TrendingUp, Share2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useEffect, useState, useCallback } from 'react'
@@ -211,6 +212,15 @@ export default function GiftListPage() {
       <header className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <Image 
+                src="/logo.png" 
+                alt="Logo Autoscuola Ardito" 
+                width={150} 
+                height={75}
+                priority
+              />
+            </div>
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
               <Gift className="h-8 w-8 text-red-600" />
             </div>
@@ -230,7 +240,7 @@ export default function GiftListPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Progresso Totale</h2>
             <span className="text-2xl font-bold text-primary-600">
-              €{totalAmount.toFixed(2)} / €{targetAmount.toFixed(2)}
+              €{totalAmount.toFixed(2)}
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
@@ -254,7 +264,7 @@ export default function GiftListPage() {
                     {item.tipo === 'iscrizione' ? '💰' : '🚗'} {item.descrizione}
                   </h3>
                   <span className={`text-lg font-bold ${item.tipo === 'iscrizione' ? 'text-primary-600' : 'text-green-600'}`}>
-                    €{item.importoRaccolto.toFixed(2)} / €{item.importoTarget.toFixed(2)}
+                    €{item.importoRaccolto.toFixed(2)}
                   </span>
                 </div>
               </div>

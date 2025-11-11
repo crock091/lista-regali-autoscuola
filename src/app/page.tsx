@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Gift, Car, Users, CreditCard } from 'lucide-react'
 
 export default function HomePage() {
@@ -8,9 +9,14 @@ export default function HomePage() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Car className="h-8 w-8 text-primary-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Lista Regali Autoscuola</h1>
+            <div className="flex items-center">
+              <Image 
+                src="/logo.png" 
+                alt="Logo Autoscuola Ardito" 
+                width={180} 
+                height={90}
+                priority
+              />
             </div>
             <div className="space-x-4">
               <Link
@@ -48,9 +54,9 @@ export default function HomePage() {
             <div className="bg-primary-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
               <Gift className="h-6 w-6 text-primary-600" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Crea la tua Lista</h3>
+            <h3 className="text-xl font-bold mb-2">Registrati e Ottieni la tua Lista</h3>
             <p className="text-gray-600">
-              Scegli tra iscrizione, guide pratiche ed esami. Personalizza ogni voce con importi e descrizioni.
+              Lista completa già pronta con iscrizione e guide pratiche. Tutto quello che ti serve per la patente!
             </p>
           </div>
 
@@ -92,31 +98,24 @@ export default function HomePage() {
         {/* How it works */}
         <div className="mt-16">
           <h3 className="text-2xl font-bold text-center mb-8">Come Funziona</h3>
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="bg-primary-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                 1
               </div>
               <h4 className="font-bold mb-2">Registrati</h4>
-              <p className="text-gray-600 text-sm">Crea il tuo account gratuito</p>
+              <p className="text-gray-600 text-sm">Crea il tuo account gratuito e ottieni la tua lista</p>
             </div>
             <div className="text-center">
               <div className="bg-primary-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                 2
-              </div>
-              <h4 className="font-bold mb-2">Crea Lista</h4>
-              <p className="text-gray-600 text-sm">Aggiungi iscrizione, guide ed esami</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-primary-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                3
               </div>
               <h4 className="font-bold mb-2">Condividi</h4>
               <p className="text-gray-600 text-sm">Invia il link ad amici e parenti</p>
             </div>
             <div className="text-center">
               <div className="bg-primary-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                4
+                3
               </div>
               <h4 className="font-bold mb-2">Ricevi Contributi</h4>
               <p className="text-gray-600 text-sm">Paga la tua patente coi regali!</p>

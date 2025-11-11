@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Gift, Copy, ExternalLink, TrendingUp, Car, Euro } from 'lucide-react'
 
 interface DashboardData {
@@ -150,7 +151,15 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6">
-          <div className="text-center">
+          <div className="flex flex-col items-center">
+            <Image 
+              src="/logo.png" 
+              alt="Logo Autoscuola Ardito" 
+              width={150} 
+              height={75}
+              className="mb-4"
+              priority
+            />
             <h1 className="text-3xl font-bold text-gray-900">
               Ciao {data.student.nome}! 🚗
             </h1>
