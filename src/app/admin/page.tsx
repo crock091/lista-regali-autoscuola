@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Users, Gift, TrendingUp, Euro, Calendar, Download, LogOut } from 'lucide-react'
 
@@ -69,6 +69,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'contributions'>('overview')
   const [adminData, setAdminData] = useState<any>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null) // Per espandere dettagli allievo
   const router = useRouter()
 
   // Controllo autenticazione admin
@@ -725,50 +726,127 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {students.map((student) => (
-                        <tr key={student.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {student.nome} {student.cognome}
-                              </div>
-                              <div className="text-sm text-gray-500">{student.telefono}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {student.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {student.giftLists.length}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            €{student.giftLists.reduce((total, list) => 
-                              total + list.giftItems.reduce((sum, item) => sum + item.importoRaccolto, 0), 0
-                            ).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(student.createdAt).toLocaleDateString('it-IT')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="flex flex-col space-y-1">
-                              <button
-                                onClick={() => deleteStudentRejectedContributions(student.id, `${student.nome} ${student.cognome}`)}
-                                className="text-orange-600 hover:text-orange-800 text-xs underline disabled:opacity-50"
-                                disabled={loading || processingIds.has(student.id)}
-                              >
-                                {processingIds.has(student.id) ? '⏳ Eliminando...' : '🗑️ Elimina Contributi Rifiutati'}
-                              </button>
-                              <button
-                                onClick={() => deleteStudent(student.id, `${student.nome} ${student.cognome}`)}
-                                className="text-red-600 hover:text-red-800 text-xs underline disabled:opacity-50"
-                                disabled={loading || processingIds.has(`delete-${student.id}`)}
-                              >
-                                {processingIds.has(`delete-${student.id}`) ? '⏳ Eliminando...' : '❌ Elimina Allievo Completo'}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {students.map((student) => {
+                        const isExpanded = expandedStudentId === student.id
+                        const allContributions = student.giftLists.flatMap(list => 
+                          list.giftItems.flatMap(item => item.contributions)
+                        )
+                        
+                        return (
+                          <React.Fragment key={student.id}>
+                            <tr 
+                              className="hover:bg-gray-50 cursor-pointer"
+                              onClick={() => setExpandedStudentId(isExpanded ? null : student.id)}
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span className="mr-2">{isExpanded ? '▼' : '▶'}</span>
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {student.nome} {student.cognome}
+                                    </div>
+                                    <div className="text-sm text-gray-500">{student.telefono}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {student.email}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {student.giftLists.length}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                €{student.giftLists.reduce((total, list) => 
+                                  total + list.giftItems.reduce((sum, item) => sum + item.importoRaccolto, 0), 0
+                                ).toFixed(2)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(student.createdAt).toLocaleDateString('it-IT')}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex flex-col space-y-1">
+                                  <button
+                                    onClick={() => deleteStudentRejectedContributions(student.id, `${student.nome} ${student.cognome}`)}
+                                    className="text-orange-600 hover:text-orange-800 text-xs underline disabled:opacity-50"
+                                    disabled={loading || processingIds.has(student.id)}
+                                  >
+                                    {processingIds.has(student.id) ? '⏳ Eliminando...' : '🗑️ Elimina Contributi Rifiutati'}
+                                  </button>
+                                  <button
+                                    onClick={() => deleteStudent(student.id, `${student.nome} ${student.cognome}`)}
+                                    className="text-red-600 hover:text-red-800 text-xs underline disabled:opacity-50"
+                                    disabled={loading || processingIds.has(`delete-${student.id}`)}
+                                  >
+                                    {processingIds.has(`delete-${student.id}`) ? '⏳ Eliminando...' : '❌ Elimina Allievo Completo'}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            
+                            {isExpanded && (
+                              <tr>
+                                <td colSpan={6} className="px-6 py-4 bg-gray-50">
+                                  <div className="space-y-4">
+                                    <h4 className="font-semibold text-gray-900">
+                                      Contributi per {student.nome} {student.cognome}
+                                    </h4>
+                                    
+                                    {allContributions.length === 0 ? (
+                                      <p className="text-sm text-gray-500">Nessun contributo ricevuto</p>
+                                    ) : (
+                                      <div className="space-y-3">
+                                        {allContributions.map((contribution: any) => (
+                                          <div key={contribution.id} className="bg-white p-4 rounded-lg border border-gray-200">
+                                            <div className="grid grid-cols-2 gap-4">
+                                              <div>
+                                                <p className="text-sm font-medium text-gray-900">{contribution.nome}</p>
+                                                {contribution.email && (
+                                                  <p className="text-xs text-gray-500">{contribution.email}</p>
+                                                )}
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                  {new Date(contribution.dataContributo).toLocaleDateString('it-IT', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                  })}
+                                                </p>
+                                              </div>
+                                              <div className="text-right">
+                                                <p className="text-lg font-bold text-green-600">
+                                                  €{contribution.importo.toFixed(2)}
+                                                </p>
+                                                <p className="text-xs text-gray-500">{contribution.metodoPagamento}</p>
+                                                <span className={`inline-block mt-1 px-2 py-1 text-xs rounded ${
+                                                  contribution.stato === 'completed' ? 'bg-green-100 text-green-800' :
+                                                  contribution.stato === 'pending_verification' ? 'bg-orange-100 text-orange-800' :
+                                                  contribution.stato === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                  'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                  {contribution.stato === 'completed' ? 'Completato' :
+                                                   contribution.stato === 'pending_verification' ? 'In Verifica' :
+                                                   contribution.stato === 'rejected' ? 'Rifiutato' :
+                                                   contribution.stato === 'draft' ? 'Bozza' : contribution.stato}
+                                                </span>
+                                              </div>
+                                            </div>
+                                            {contribution.messaggio && (
+                                              <div className="mt-2 pt-2 border-t border-gray-200">
+                                                <p className="text-xs text-gray-600 italic">"{contribution.messaggio}"</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
