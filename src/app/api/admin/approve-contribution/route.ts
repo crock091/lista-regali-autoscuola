@@ -80,6 +80,14 @@ export async function POST(request: NextRequest) {
       // Invia email di notifica allo studente
       try {
         const student = contribution.giftItem.giftList.student
+        
+        console.log('📧 Invio email approvazione - Dati contributo:', {
+          studentEmail: student.email,
+          contributorEmail: contribution.email,
+          contributorName: contribution.nome,
+          amount: contribution.importo
+        })
+        
         await sendPaymentApprovedNotification(
           student.email,
           `${student.nome} ${student.cognome}`,
@@ -99,6 +107,8 @@ export async function POST(request: NextRequest) {
             `${student.nome} ${student.cognome}`
           )
           console.log(`✅ Email di approvazione inviata al donatore ${contribution.email}`)
+        } else {
+          console.log('⚠️ Email donatore non disponibile, invio saltato')
         }
       } catch (emailError) {
         console.error('❌ Errore invio email, ma contributo approvato:', emailError)
