@@ -93,7 +93,8 @@ export async function POST(request: NextRequest) {
           `${student.nome} ${student.cognome}`,
           contribution.nome,
           contribution.importo,
-          contribution.giftItem.descrizione
+          contribution.giftItem.descrizione,
+          contribution.messaggio || undefined
         )
         console.log(`✅ Email di approvazione inviata allo studente ${student.email}`)
         
@@ -104,7 +105,8 @@ export async function POST(request: NextRequest) {
             contribution.nome,
             contribution.importo,
             contribution.giftItem.descrizione,
-            `${student.nome} ${student.cognome}`
+            `${student.nome} ${student.cognome}`,
+            contribution.messaggio || undefined
           )
           console.log(`✅ Email di approvazione inviata al donatore ${contribution.email}`)
         } else {

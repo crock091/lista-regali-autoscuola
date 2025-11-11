@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendContributorPendingNotification } from '@/lib/email'
+import { sendContributorPendingNotification, sendStudentPendingVerificationNotification } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,9 +70,10 @@ export async function POST(request: NextRequest) {
     })
 
     // Invia email di conferma al donatore se ha fornito l'email
+    const student = contribution.giftItem.giftList.student;
+    
     if (contribution.email) {
       try {
-        const student = contribution.giftItem.giftList.student;
         await sendContributorPendingNotification(
           contribution.email,
           contribution.nome,
@@ -85,6 +86,22 @@ export async function POST(request: NextRequest) {
         console.error('❌ Errore invio email pending al donatore:', emailError);
         // Non blocchiamo l'upload per errori email
       }
+    }
+
+    // Invia email allo studente per notificare il nuovo pagamento da verificare
+    try {
+      await sendStudentPendingVerificationNotification(
+        student.email,
+        `${student.nome} ${student.cognome}`,
+        contribution.nome,
+        contribution.importo,
+        contribution.giftItem.descrizione,
+        contribution.metodoPagamento,
+        contribution.messaggio || undefined
+      );
+    } catch (emailError) {
+      console.error('❌ Errore invio email pending allo studente:', emailError);
+      // Non blocchiamo l'upload per errori email
     }
 
     return NextResponse.json({
