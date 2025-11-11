@@ -11,12 +11,19 @@ export default function RegistrazionePage() {
     cognome: '',
     email: '',
     telefono: '',
+    sede: 'Alba',  // Default ad Alba
     password: '',
     categoriaPatente: 'B'  // Default alla patente B
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+
+  const sedi = [
+    { value: 'Alba', label: 'Alba' },
+    { value: 'Neive', label: 'Neive' },
+    { value: 'Montà', label: 'Montà' }
+  ]
 
   const categoriePatente = [
     { value: 'AM', label: 'AM - Ciclomotori (50cc)', descrizione: 'Età minima: 14 anni' },
@@ -152,6 +159,25 @@ export default function RegistrazionePage() {
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="+39 123 456 7890"
               />
+            </div>
+            <div>
+              <label htmlFor="sede" className="block text-sm font-medium text-gray-700 mb-1">
+                Sede *
+              </label>
+              <select
+                id="sede"
+                name="sede"
+                required
+                value={formData.sede}
+                onChange={handleChange}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              >
+                {sedi.map((sede) => (
+                  <option key={sede.value} value={sede.value}>
+                    {sede.label}
+                  </option>
+                ))}
+              </select>
             </div>
             
             <div>

@@ -17,6 +17,7 @@ model Student {
   nome             String
   cognome          String
   telefono         String?
+  sede             String   @default("Alba") // Alba, Neive, Montà
   categoriaPatente String   @default("B") // AM, A1, A2, A3, B
   resetToken       String?  // Token per reset password
   resetTokenExpiry DateTime? // Scadenza token reset

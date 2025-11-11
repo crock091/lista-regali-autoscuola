@@ -10,6 +10,7 @@ interface Student {
   nome: string
   cognome: string
   telefono: string | null
+  sede: string
   createdAt: string
   giftLists: GiftList[]
 }
@@ -70,6 +71,7 @@ export default function AdminPage() {
   const [adminData, setAdminData] = useState<any>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null) // Per espandere dettagli allievo
+  const [selectedSede, setSelectedSede] = useState<string>('all') // Filtro sede
   const router = useRouter()
 
   // Controllo autenticazione admin
@@ -694,10 +696,28 @@ export default function AdminPage() {
 
             {activeTab === 'students' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold">Lista Allievi</h3>
-                {students.length === 0 ? (
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Lista Allievi</h3>
+                  <div className="flex items-center space-x-2">
+                    <label htmlFor="sedeFilter" className="text-sm font-medium text-gray-700">
+                      Filtra per sede:
+                    </label>
+                    <select
+                      id="sedeFilter"
+                      value={selectedSede}
+                      onChange={(e) => setSelectedSede(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value="all">Tutte le sedi</option>
+                      <option value="Alba">Alba</option>
+                      <option value="Neive">Neive</option>
+                      <option value="Montà">Montà</option>
+                    </select>
+                  </div>
+                </div>
+                {students.filter(s => selectedSede === 'all' || s.sede === selectedSede).length === 0 ? (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">Nessun allievo registrato</p>
+                    <p className="text-gray-500">Nessun allievo {selectedSede !== 'all' ? `nella sede di ${selectedSede}` : 'registrato'}</p>
                     <p className="text-sm text-gray-400 mt-1">I nuovi allievi appariranno qui dopo la registrazione</p>
                   </div>
                 ) : (
@@ -710,6 +730,9 @@ export default function AdminPage() {
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Sede
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Liste
@@ -726,7 +749,9 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {students.map((student) => {
+                      {students
+                        .filter(student => selectedSede === 'all' || student.sede === selectedSede)
+                        .map((student) => {
                         const isExpanded = expandedStudentId === student.id
                         const allContributions = student.giftLists.flatMap(list => 
                           list.giftItems.flatMap(item => item.contributions)
@@ -751,6 +776,11 @@ export default function AdminPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {student.email}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                  {student.sede}
+                                </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {student.giftLists.length}
