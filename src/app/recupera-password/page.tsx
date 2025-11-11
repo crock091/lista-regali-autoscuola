@@ -57,7 +57,7 @@ export default function RecuperaPasswordPage() {
                 Email Inviata! ✅
               </h2>
               <p className="text-gray-700 mb-4">
-                Abbiamo inviato un'email a <strong>{email}</strong> con le istruzioni per reimpostare la password.
+                Abbiamo inviato un&apos;email a <strong>{email}</strong> con le istruzioni per reimpostare la password.
               </p>
               <p className="text-sm text-gray-600 mb-4">
                 Il link sarà valido per 1 ora.
